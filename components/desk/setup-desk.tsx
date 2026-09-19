@@ -128,12 +128,20 @@ DESK_START_ISO=`}
                   add Paper keys, then restart{" "}
                   <code className="font-mono text-white/80">npm run dev</code>.
                 </p>
-                <a
-                  href="https://alpaca.markets/paper-trading"
-                  className="inline-flex text-emerald-300 underline-offset-4 hover:underline"
-                >
-                  Alpaca Paper signup →
-                </a>
+                <div className="flex flex-wrap gap-x-4 gap-y-2">
+                  <a
+                    href="https://app.alpaca.markets/signup"
+                    className="inline-flex text-emerald-300 underline-offset-4 hover:underline"
+                  >
+                    Alpaca Paper signup →
+                  </a>
+                  <a
+                    href="https://docs.alpaca.markets/docs/paper-trading"
+                    className="inline-flex text-emerald-300/80 underline-offset-4 hover:underline"
+                  >
+                    Paper trading docs →
+                  </a>
+                </div>
               </div>
             </div>
           </GlassBody>

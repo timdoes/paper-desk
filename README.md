@@ -26,7 +26,7 @@ The app name is **Paper Desk**. It is paper-only. It will not call `https://api.
 
 ## Alpaca Paper signup
 
-1. Create a paper account: [alpaca.markets/paper-trading](https://alpaca.markets/paper-trading)
+1. Create a paper account: [app.alpaca.markets/signup](https://app.alpaca.markets/signup) ([paper trading docs](https://docs.alpaca.markets/docs/paper-trading))
 2. Generate **Paper** API keys (not live keys)
 3. In the Alpaca paper dashboard, reset buying power to **$10,000** if the account still shows the default ~$100k
 4. Copy keys into `.env.local` (local) or the Vercel project env (deploy)

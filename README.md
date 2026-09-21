@@ -1,2 +1,114 @@
-# paper-desk
-Paper trading dashboard for Tim’s $10k / 30-day stock desk (Alpaca Paper). Maximize-ROI test monitor.
+# Paper Desk
+
+Premium paper-trading dashboard for **Tim Gaines**. Monitor a **$10,000 Alpaca Paper** book during a **30-day maximize-ROI** test.
+
+The app name is **Paper Desk**. It is paper-only. It will not call `https://api.alpaca.markets`.
+
+## What this is (and is not)
+
+- **$10,000 is the test stake / ROI baseline**, not invented cash.
+- Fresh Alpaca paper accounts often start near **$100,000**. Reset paper buying power to **$10,000** so ROI vs stake is honest. Tim’s paper account is already verified at $10k.
+- If `ALPACA_API_KEY` or `ALPACA_API_SECRET` is missing, the UI stays on the setup desk. GET routes return `{ "configured": false }`. No broker balances, fills, or prices are fabricated.
+
+## Stack
+
+- Next.js App Router, TypeScript, Tailwind CSS, shadcn/ui
+- Vercel-ready (`npm run build` must pass)
+- Server routes talk to Alpaca Paper only: `https://paper-api.alpaca.markets`
+
+## Features
+
+1. **Overview** — equity curve, day P&L, total ROI % vs the $10k stake, cash, buying power, days left
+2. **Positions** — symbol, qty, avg, last, unrealized $ / %
+3. **Blotter** — recent orders and fills
+4. **Manual trade** — paper market / limit (symbol, side, qty, type) → `POST /api/orders`
+5. **Risk strip** — max 10% NAV per name; ~3% daily loss breaker (buys blocked while open, sells still allowed)
+
+## Alpaca Paper signup
+
+1. Create a paper account: [app.alpaca.markets/signup](https://app.alpaca.markets/signup) ([paper trading docs](https://docs.alpaca.markets/docs/paper-trading))
+2. Generate **Paper** API keys (not live keys)
+3. In the Alpaca paper dashboard, reset buying power to **$10,000** if the account still shows the default ~$100k
+4. Copy keys into `.env.local` (local) or the Vercel project env (deploy)
+
+## Environment
+
+Copy `.env.example` to `.env.local`:
+
+```bash
+cp .env.example .env.local
+```
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `ALPACA_API_KEY` | yes, to leave setup desk | Paper key id |
+| `ALPACA_API_SECRET` | yes, to leave setup desk | Paper secret |
+| `ALPACA_PAPER` | yes, must be `true` | Paper-only hard flag |
+| `DESK_START_ISO` | no | ISO-8601 start of the 30-day countdown |
+
+Paper Desk **hard-fails** if:
+
+- `ALPACA_PAPER` is not exactly `true` (when keys are present), or
+- any environment value points at live `api.alpaca.markets`
+
+The Paper API base is hardcoded. There is no live-host override.
+
+## Local run
+
+```bash
+npm install
+cp .env.example .env.local
+# add Paper keys, keep ALPACA_PAPER=true
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+Without keys you should see the setup desk — not a fake $10,000 cash balance.
+
+```bash
+npm run build
+npm test
+```
+
+## Vercel
+
+1. Import `timdoes/paper-desk`
+2. Set `ALPACA_API_KEY`, `ALPACA_API_SECRET`, `ALPACA_PAPER=true`
+3. Optionally set `DESK_START_ISO`
+4. Deploy. Framework preset: Next.js
+
+Do not add a live Alpaca base URL. The app will refuse to start if it sees `api.alpaca.markets`.
+
+## API
+
+| Method | Path | Missing keys | With Paper keys |
+| --- | --- | --- | --- |
+| GET | `/api/account` | `{ configured: false }` | Equity, cash, buying power, ROI vs $10k, risk, 30-day clock |
+| GET | `/api/positions` | `{ configured: false }` | Open positions |
+| GET | `/api/orders` | `{ configured: false }` | Recent orders / fills |
+| GET | `/api/portfolio/history` | `{ configured: false }` | Equity curve points from Alpaca |
+| POST | `/api/orders` | `{ configured: false }` | Paper market/limit after risk checks |
+
+POST body:
+
+```json
+{
+  "symbol": "AAPL",
+  "qty": 1,
+  "side": "buy",
+  "type": "market"
+}
+```
+
+Limit orders also need `limit_price`. Time in force defaults to `day`.
+
+Risk on buys:
+
+- Daily loss ≤ about −3% of last equity → buy rejected, sell allowed
+- Projected name market value > 10% of NAV → buy rejected
+- Market buy on a name with no open mark → buy rejected (use a limit so the cap can be priced)
+
+## Truthfulness
+
+Paper Desk only renders numbers that Alpaca Paper returned, or values derived from those numbers (day P&L, ROI vs the $10k stake, risk percentages). It will not invent fills, last prices, or balances to make the desk look populated.

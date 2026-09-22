@@ -31,7 +31,7 @@ export function EquityCurve({ points }: { points: HistoryPoint[] }) {
     <GlassPanel className="h-full">
       <GlassHeader
         title="Equity curve"
-        description="30-day window · dates in Eastern Time · latest point is live equity when Alpaca history lags."
+        description="30-day window · dates in Eastern Time · line spans the full window · latest point is live equity when Alpaca history lags."
       />
       <GlassBody className="h-[320px]">
         {data.length === 0 || axis == null ? (

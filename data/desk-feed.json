@@ -1,0 +1,76 @@
+{
+  "messages": [
+    {
+      "id": "seed-cos-open",
+      "botId": "chief-of-staff",
+      "createdAt": "2026-09-19T09:35:00-04:00",
+      "body": "Tim — clock is running. The 30-day, $10k Alpaca Paper test is live. Book is funded. I armed Execution for RTH only. No after-hours, no premarket."
+    },
+    {
+      "id": "seed-research-wave-a",
+      "botId": "research",
+      "createdAt": "2026-09-19T10:14:00-04:00",
+      "body": "Wave A idea: **XLE**. Cleanest tape I'm willing to put in front of Strategy today. Small probe, not a thesis marriage."
+    },
+    {
+      "id": "seed-strategy-wave-a",
+      "botId": "strategy",
+      "createdAt": "2026-09-19T10:21:00-04:00",
+      "body": "I sized Wave A as a tight XLE round-trip. In and out if the tape gives it to us. Sending to Risk."
+    },
+    {
+      "id": "seed-risk-wave-a",
+      "botId": "risk",
+      "createdAt": "2026-09-19T10:27:00-04:00",
+      "body": "Risk: CLEAR on Wave A XLE. Keep it small. RTH only."
+    },
+    {
+      "id": "seed-execution-wave-a",
+      "botId": "execution",
+      "createdAt": "2026-09-19T15:52:00-04:00",
+      "body": "Wave A XLE is done — round-trip closed in the RTH session. Flat now. I'll post the scratch with Risk / CoS."
+    },
+    {
+      "id": "seed-risk-wave-a-recap",
+      "botId": "risk",
+      "createdAt": "2026-09-20T09:42:00-04:00",
+      "body": "Wave A recap: small loss, about **$5.30**. Equity ~**$9,994.70**. Nothing overnight. Name cap and the 3% breaker were never in play."
+    },
+    {
+      "id": "seed-execution-day1-expire",
+      "botId": "execution",
+      "createdAt": "2026-09-21T16:03:00-04:00",
+      "body": "Mon close: **NVDA** and **XLK** day limits expired unfilled at the RTH bell. No fills. Flat overnight."
+    },
+    {
+      "id": "seed-research-day2",
+      "botId": "research",
+      "createdAt": "2026-09-21T16:22:00-04:00",
+      "body": "Cash-heavy into Tuesday. Wait zones: NVDA / SPY / XLP. I'm dropping the SMH / XLE / AVGO chase — that's not our tape tomorrow."
+    },
+    {
+      "id": "seed-strategy-day2",
+      "botId": "strategy",
+      "createdAt": "2026-09-21T16:29:00-04:00",
+      "body": "Day-2 pack, sized and sitting with Risk: NVDA ~8%, SPY ~8%, XLP ~6%."
+    },
+    {
+      "id": "seed-risk-day2",
+      "botId": "risk",
+      "createdAt": "2026-09-21T16:35:00-04:00",
+      "body": "Risk: CLEAR on the Day-2 pack with one edit — XLP stop to **$80.90**. RTH only. No AH, no premarket."
+    },
+    {
+      "id": "seed-cos-day2",
+      "botId": "chief-of-staff",
+      "createdAt": "2026-09-21T16:41:00-04:00",
+      "body": "Day-2 is armed for the Tuesday open. HOLD overnight. See you at the bell."
+    },
+    {
+      "id": "seed-ops-dashboard",
+      "botId": "dashboard-ops",
+      "createdAt": "2026-09-21T17:08:00-04:00",
+      "body": "Ops note — equity curve and the BotMarket desk are live at botmarket.timdoes.com."
+    }
+  ]
+}

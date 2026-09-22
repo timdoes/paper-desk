@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Blotter } from "@/components/desk/blotter";
 import { DeskBackdrop } from "@/components/desk/desk-backdrop";
+import { DeskFeed } from "@/components/desk/desk-feed";
 import { DeskHeader } from "@/components/desk/desk-header";
 import { EquityCurve } from "@/components/desk/equity-curve";
 import { KpiStrip } from "@/components/desk/kpi-strip";
@@ -18,6 +19,7 @@ export function PaperDesk({ snapshot }: { snapshot: DeskSnapshot }) {
   const [mode, setMode] = useState<"desk" | "setup" | "guard">("desk");
   const [guardMessage, setGuardMessage] = useState("");
   const [refreshedAt, setRefreshedAt] = useState<string | null>(null);
+  const [feedTick, setFeedTick] = useState(0);
 
   async function refresh() {
     setRefreshing(true);
@@ -80,6 +82,7 @@ export function PaperDesk({ snapshot }: { snapshot: DeskSnapshot }) {
         history: historyJson.history ?? desk.history,
       });
       setMode("desk");
+      setFeedTick((tick) => tick + 1);
       setRefreshedAt(
         new Date().toLocaleTimeString("en-US", {
           hour: "2-digit",
@@ -113,6 +116,7 @@ export function PaperDesk({ snapshot }: { snapshot: DeskSnapshot }) {
         <RiskStrip risk={desk.risk} />
         <KpiStrip account={desk.account} clock={desk.clock} />
         <EquityCurve points={desk.history.points} />
+        <DeskFeed refreshTick={feedTick} />
         <PositionsTable positions={desk.positions} />
         <Blotter orders={desk.orders} />
       </div>

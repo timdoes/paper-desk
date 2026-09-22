@@ -203,3 +203,37 @@ export type DeskSnapshot = {
     points: HistoryPoint[];
   };
 };
+
+export const DESK_BOT_IDS = [
+  "chief-of-staff",
+  "research",
+  "strategy",
+  "risk",
+  "execution",
+  "dashboard-ops",
+] as const;
+
+export type DeskBotId = (typeof DESK_BOT_IDS)[number];
+
+export type DeskBot = {
+  id: DeskBotId;
+  name: string;
+  role: string;
+  initial: string;
+  accent: string;
+};
+
+export type DeskMessage = {
+  id: string;
+  botId: DeskBotId;
+  body: string;
+  createdAt: string;
+};
+
+export type DeskFeedSort = "asc";
+
+export type DeskFeedPayload = {
+  bots: DeskBot[];
+  messages: DeskMessage[];
+  sort: DeskFeedSort;
+};

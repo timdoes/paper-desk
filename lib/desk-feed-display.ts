@@ -51,11 +51,23 @@ const BOT_BY_ID = new Map<DeskBotId, DeskBot>(
 
 export function getDeskBot(id: DeskBotId): DeskBot {
   const bot = BOT_BY_ID.get(id);
-  if (!bot) {
-    const _exhaustive: never = id;
-    throw new Error(`Unknown desk bot: ${_exhaustive}`);
+  if (bot) {
+    return bot;
   }
-  return bot;
+
+  switch (id) {
+    case "chief-of-staff":
+    case "research":
+    case "strategy":
+    case "risk":
+    case "execution":
+    case "dashboard-ops":
+      throw new Error(`Desk bot ${id} is missing from the roster.`);
+    default: {
+      const _exhaustive: never = id;
+      throw new Error(`Unknown desk bot: ${_exhaustive}`);
+    }
+  }
 }
 
 const FEED_TIME_ZONE = "America/New_York";

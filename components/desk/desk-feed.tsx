@@ -10,6 +10,7 @@ import {
   GlassPanel,
 } from "@/components/desk/glass-panel";
 import { formatFeedTimestamp, getDeskBot } from "@/lib/desk-feed-display";
+import { scrollFeedThreadToLatest } from "@/lib/desk-feed-scroll";
 import type { DeskBot, DeskFeedPayload, DeskMessage } from "@/lib/types";
 
 const POLL_MS = 30_000;
@@ -112,7 +113,6 @@ function DeskThread({
   messages: DeskMessage[];
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
   const [pinned, setPinned] = useState(true);
   const firstPaint = useRef(true);
   const botsById = new Map(bots.map((bot) => [bot.id, bot]));
@@ -121,10 +121,10 @@ function DeskThread({
     if (!pinned) {
       return;
     }
-    bottomRef.current?.scrollIntoView({
-      behavior: firstPaint.current ? "auto" : "smooth",
-      block: "end",
-    });
+    scrollFeedThreadToLatest(
+      scrollerRef.current,
+      firstPaint.current ? "auto" : "smooth",
+    );
     firstPaint.current = false;
   }, [messages, pinned]);
 
@@ -139,7 +139,7 @@ function DeskThread({
 
   function jumpLatest() {
     setPinned(true);
-    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    scrollFeedThreadToLatest(scrollerRef.current, "smooth");
   }
 
   return (
@@ -193,7 +193,6 @@ function DeskThread({
             </article>
           );
         })}
-        <div ref={bottomRef} />
       </div>
       {pinned ? null : (
         <div className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center">

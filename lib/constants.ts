@@ -8,5 +8,5 @@ export const DESK_LENGTH_DAYS = 30;
 export const MAX_NAME_NAV_PCT = 0.1;
 export const DAILY_LOSS_BREAKER_PCT = 0.03;
 
-export const DESK_OWNER = "Tim Gaines";
-export const DESK_NAME = "Paper Desk";
+export const DESK_OWNER = "TimDOES";
+export const DESK_NAME = "BotMarket";

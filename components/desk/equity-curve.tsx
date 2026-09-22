@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { DESK_NAME } from "@/lib/constants";
 import { formatUsd } from "@/lib/format";
 import type { HistoryPoint } from "@/lib/types";
 import { GlassBody, GlassHeader, GlassPanel } from "@/components/desk/glass-panel";
@@ -33,7 +34,7 @@ export function EquityCurve({ points }: { points: HistoryPoint[] }) {
         {data.length === 0 ? (
           <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-white/10 bg-black/20">
             <p className="max-w-sm text-center text-sm text-white/40">
-              No equity history from Alpaca Paper yet. Paper Desk will not draw
+              No equity history from Alpaca Paper yet. {DESK_NAME} will not draw
               a synthetic curve.
             </p>
           </div>

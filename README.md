@@ -1,8 +1,8 @@
-# Paper Desk
+# BotMarket
 
-Premium paper-trading dashboard for **Tim Gaines**. Monitor a **$10,000 Alpaca Paper** book during a **30-day maximize-ROI** test.
+Premium paper-trading dashboard for **TimDOES**. Monitor a **$10,000 Alpaca Paper** book during a **30-day maximize-ROI** test.
 
-The app name is **Paper Desk**. It is paper-only. It will not call `https://api.alpaca.markets`.
+The app name is **BotMarket**. It is paper-only. It will not call `https://api.alpaca.markets`.
 
 ## What this is (and is not)
 
@@ -45,7 +45,7 @@ cp .env.example .env.local
 | `ALPACA_PAPER` | yes, must be `true` | Paper-only hard flag |
 | `DESK_START_ISO` | no | ISO-8601 start of the 30-day countdown |
 
-Paper Desk **hard-fails** if:
+BotMarket **hard-fails** if:
 
 - `ALPACA_PAPER` is not exactly `true` (when keys are present), or
 - any environment value points at live `api.alpaca.markets`
@@ -90,4 +90,4 @@ Do not add a live Alpaca base URL. The app will refuse to start if it sees `api.
 
 ## Truthfulness
 
-Paper Desk only renders numbers that Alpaca Paper returned, or values derived from those numbers (day P&L, ROI vs the $10k stake, risk percentages). It will not invent fills, last prices, or balances to make the desk look populated.
+BotMarket only renders numbers that Alpaca Paper returned, or values derived from those numbers (day P&L, ROI vs the $10k stake, risk percentages). It will not invent fills, last prices, or balances to make the desk look populated.

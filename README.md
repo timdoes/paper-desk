@@ -21,8 +21,7 @@ The app name is **Paper Desk**. It is paper-only. It will not call `https://api.
 1. **Overview** — equity curve, day P&L, total ROI % vs the $10k stake, cash, buying power, days left
 2. **Positions** — symbol, qty, avg, last, unrealized $ / %
 3. **Blotter** — recent orders and fills
-4. **Manual trade** — paper market / limit (symbol, side, qty, type) → `POST /api/orders`
-5. **Risk strip** — max 10% NAV per name; ~3% daily loss breaker (buys blocked while open, sells still allowed)
+4. **Risk strip** — max 10% NAV per name; ~3% daily loss breaker (shown on the desk; sells stay available if it trips)
 
 ## Alpaca Paper signup
 
@@ -88,26 +87,6 @@ Do not add a live Alpaca base URL. The app will refuse to start if it sees `api.
 | GET | `/api/positions` | `{ configured: false }` | Open positions |
 | GET | `/api/orders` | `{ configured: false }` | Recent orders / fills |
 | GET | `/api/portfolio/history` | `{ configured: false }` | Equity curve points from Alpaca |
-| POST | `/api/orders` | `{ configured: false }` | Paper market/limit after risk checks |
-
-POST body:
-
-```json
-{
-  "symbol": "AAPL",
-  "qty": 1,
-  "side": "buy",
-  "type": "market"
-}
-```
-
-Limit orders also need `limit_price`. Time in force defaults to `day`.
-
-Risk on buys:
-
-- Daily loss ≤ about −3% of last equity → buy rejected, sell allowed
-- Projected name market value > 10% of NAV → buy rejected
-- Market buy on a name with no open mark → buy rejected (use a limit so the cap can be priced)
 
 ## Truthfulness
 

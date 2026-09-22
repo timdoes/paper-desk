@@ -9,7 +9,6 @@ import { KpiStrip } from "@/components/desk/kpi-strip";
 import { PositionsTable } from "@/components/desk/positions-table";
 import { RiskStrip } from "@/components/desk/risk-strip";
 import { SetupDesk } from "@/components/desk/setup-desk";
-import { TradePanel } from "@/components/desk/trade-panel";
 import { PaperGuardDesk } from "@/components/desk/paper-guard-desk";
 import type { DeskSnapshot } from "@/lib/types";
 
@@ -113,13 +112,7 @@ export function PaperDesk({ snapshot }: { snapshot: DeskSnapshot }) {
         />
         <RiskStrip risk={desk.risk} />
         <KpiStrip account={desk.account} clock={desk.clock} />
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,1fr)]">
-          <EquityCurve points={desk.history.points} />
-          <TradePanel
-            risk={desk.risk}
-            onPlaced={refresh}
-          />
-        </div>
+        <EquityCurve points={desk.history.points} />
         <PositionsTable positions={desk.positions} />
         <Blotter orders={desk.orders} />
       </div>

@@ -188,15 +188,6 @@ export type UnconfiguredPayload = {
   configured: false;
 };
 
-export type PlaceOrderBody = {
-  symbol: string;
-  qty: number | string;
-  side: OrderSide;
-  type: OrderType;
-  limit_price?: number | string;
-  time_in_force?: "day" | "gtc";
-};
-
 export type DeskSnapshot = {
   configured: true;
   paper: true;

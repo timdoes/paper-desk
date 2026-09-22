@@ -130,7 +130,7 @@ describe("merge seed + blob", () => {
       id: "live-research-1",
       botId: "research",
       body: "Wait zone still NVDA / SPY / XLP. No new marks from me.",
-      createdAt: "2026-09-22T09:05:00.000Z",
+      createdAt: "2026-09-23T00:05:00.000Z",
     };
     const edited: DeskMessage = {
       ...seed[0]!,
@@ -152,7 +152,7 @@ describe("merge seed + blob", () => {
       {
         botId: "execution",
         body: "Still flat. No new paper fills to report.",
-        createdAt: "2026-09-22T13:30:00.000Z",
+        createdAt: "2026-09-23T00:30:00.000Z",
       },
       { adapter },
     );

@@ -14,13 +14,12 @@ import {
   equityCurveWindow,
   formatEquityCurveDate,
   formatUsd,
-  skipLeadingZeroEquity,
 } from "@/lib/format";
 import type { HistoryPoint } from "@/lib/types";
 import { GlassBody, GlassHeader, GlassPanel } from "@/components/desk/glass-panel";
 
 export function EquityCurve({ points }: { points: HistoryPoint[] }) {
-  const data = skipLeadingZeroEquity(points).map((point) => ({
+  const data = points.map((point) => ({
     t: point.t,
     equity: point.equity,
   }));
@@ -31,7 +30,7 @@ export function EquityCurve({ points }: { points: HistoryPoint[] }) {
     <GlassPanel className="h-full">
       <GlassHeader
         title="Equity curve"
-        description="30-day window · dates in Eastern Time · line spans the full window · latest point is live equity when Alpaca history lags."
+        description="30-day window · dates in Eastern Time · $0 until desk start · latest point is live equity when Alpaca history lags."
       />
       <GlassBody className="h-[320px]">
         {data.length === 0 || axis == null ? (

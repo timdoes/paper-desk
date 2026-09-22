@@ -5,7 +5,6 @@ import {
   etCalendarDateKey,
   equityCurveWindow,
   formatEquityCurveDate,
-  skipLeadingZeroEquity,
 } from "./format";
 
 describe("formatEquityCurveDate", () => {
@@ -77,33 +76,5 @@ describe("equityCurveWindow", () => {
     assert.equal(addCalendarDays(window.startKey, 29), window.endKey);
     assert.equal(formatEquityCurveDate(window.endMs), "Sep 22");
     assert.equal(formatEquityCurveDate(window.startMs), "Aug 24");
-  });
-});
-
-describe("skipLeadingZeroEquity", () => {
-  it("starts the series at the first funded day", () => {
-    const points = [
-      { t: Date.parse("2026-09-17T00:00:00.000Z"), equity: 0 },
-      { t: Date.parse("2026-09-18T00:00:00.000Z"), equity: 0 },
-      { t: Date.parse("2026-09-19T00:00:00.000Z"), equity: 10_000 },
-      { t: Date.parse("2026-09-20T00:00:00.000Z"), equity: 10_050 },
-    ];
-    assert.deepEqual(skipLeadingZeroEquity(points), points.slice(2));
-  });
-
-  it("keeps an already-funded series unchanged", () => {
-    const points = [
-      { t: Date.parse("2026-09-19T00:00:00.000Z"), equity: 10_000 },
-      { t: Date.parse("2026-09-20T00:00:00.000Z"), equity: 9_800 },
-    ];
-    assert.deepEqual(skipLeadingZeroEquity(points), points);
-  });
-
-  it("does not invent a curve when every broker point is zero", () => {
-    const points = [
-      { t: Date.parse("2026-09-19T00:00:00.000Z"), equity: 0 },
-      { t: Date.parse("2026-09-20T00:00:00.000Z"), equity: 0 },
-    ];
-    assert.deepEqual(skipLeadingZeroEquity(points), points);
   });
 });

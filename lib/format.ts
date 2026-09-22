@@ -1,5 +1,4 @@
 import { DESK_LENGTH_DAYS } from "@/lib/constants";
-import type { HistoryPoint } from "@/lib/types";
 
 export function parseBrokerNumber(
   value: string | number | null | undefined,
@@ -173,8 +172,3 @@ export function formatEquityCurveDate(t: number): string {
   });
 }
 
-/** Drop leading $0 bars so the curve starts on the first funded session day. */
-export function skipLeadingZeroEquity(points: HistoryPoint[]): HistoryPoint[] {
-  const firstFunded = points.findIndex((point) => point.equity !== 0);
-  return firstFunded <= 0 ? points : points.slice(firstFunded);
-}

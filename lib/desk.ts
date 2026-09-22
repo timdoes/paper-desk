@@ -7,6 +7,7 @@ import {
   addCalendarDays,
   brokerSessionDateKey,
   equityCurveWindow,
+  etCalendarDateKey,
   noonUtcForDateKey,
   parseBrokerNumber,
 } from "@/lib/format";
@@ -22,6 +23,21 @@ import type {
   OrderView,
   PositionView,
 } from "@/lib/types";
+
+/** ET calendar date when the experiment starts, if `DESK_START_ISO` is valid. */
+export function deskStartEtDateKey(
+  startIso: string | null | undefined = process.env.DESK_START_ISO,
+): string | null {
+  const raw = startIso?.trim() ?? "";
+  if (!raw) {
+    return null;
+  }
+  const start = Date.parse(raw);
+  if (Number.isNaN(start)) {
+    return null;
+  }
+  return etCalendarDateKey(start);
+}
 
 export function getDeskClock(
   startIso = process.env.DESK_START_ISO,
@@ -147,10 +163,10 @@ export function toHistoryPoints(
  * equity through each ET calendar day. Prefer live `account.equity` for today
  * so the right edge matches the KPI.
  *
- * Days from the window start through the day before the first funded bar are
- * padded with that first funded equity (flat). That is domain padding so the
- * teal line starts at the left tick — not invented P&L before funding, and
- * not a $0 crash. Never interpolate a zigzag between broker values.
+ * Days before experiment start (`DESK_START_ISO`) or, if that is unset, the
+ * first funded broker bar stay at $0 — the original Alpaca lead-in. From that
+ * start day onward the series is the real path. Never carry first-funded
+ * equity back across the unfunded lead-in, and never interpolate a zigzag.
  */
 export function shapeEquityCurvePoints(
   brokerPoints: HistoryPoint[],
@@ -158,6 +174,7 @@ export function shapeEquityCurvePoints(
     liveEquity: number | null;
     now?: number;
     windowDays?: number;
+    deskStartIso?: string | null;
   },
 ): HistoryPoint[] {
   const now = options.now ?? Date.now();
@@ -167,6 +184,11 @@ export function shapeEquityCurvePoints(
     options.liveEquity != null && Number.isFinite(options.liveEquity)
       ? options.liveEquity
       : null;
+  const deskStartKey = deskStartEtDateKey(
+    options.deskStartIso !== undefined
+      ? options.deskStartIso
+      : process.env.DESK_START_ISO,
+  );
 
   const byDay = new Map<string, number>();
   for (const point of brokerPoints) {
@@ -192,7 +214,9 @@ export function shapeEquityCurvePoints(
     return [];
   }
 
-  let lastKnown = firstFundedEquity;
+  const equityStartKey = deskStartKey ?? firstFundedKey ?? endKey;
+
+  let lastKnown: number | null = null;
   if (firstFundedKey != null && firstFundedKey < startKey) {
     for (const key of dayKeys) {
       if (key > startKey) {
@@ -207,11 +231,19 @@ export function shapeEquityCurvePoints(
 
   const points: HistoryPoint[] = [];
   for (let key = startKey; key <= endKey; key = addCalendarDays(key, 1)) {
+    if (key < equityStartKey) {
+      points.push({ t: noonUtcForDateKey(key), equity: 0 });
+      continue;
+    }
+
+    if (lastKnown == null) {
+      lastKnown = firstFundedEquity;
+    }
     if (firstFundedKey != null && key >= firstFundedKey && byDay.has(key)) {
       lastKnown = byDay.get(key) ?? lastKnown;
     }
     const equity = key === endKey && liveEquity != null ? liveEquity : lastKnown;
-    if (!Number.isFinite(equity)) {
+    if (equity == null || !Number.isFinite(equity)) {
       continue;
     }
     points.push({ t: noonUtcForDateKey(key), equity });

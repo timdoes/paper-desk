@@ -1,8 +1,11 @@
 import { RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DESK_NAME, DESK_OWNER, TEST_STAKE_USD } from "@/lib/constants";
+import { TEST_STAKE_USD } from "@/lib/constants";
 import type { DeskClock } from "@/lib/types";
+
+const HEADER_BRAND_OWNER = "TimDOES";
+const HEADER_BRAND_NAME = "BotMarket";
 
 export function DeskHeader({
   clock,
@@ -18,12 +21,12 @@ export function DeskHeader({
   return (
     <header className="flex flex-col gap-4 border-b border-white/8 pb-5 md:flex-row md:items-end md:justify-between">
       <div>
-        <p className="font-mono text-[10px] tracking-[0.28em] text-emerald-300/75 uppercase">
-          {DESK_OWNER}
+        <p className="font-mono text-[10px] tracking-[0.28em] text-emerald-300/75">
+          {HEADER_BRAND_OWNER}
         </p>
         <div className="mt-1 flex flex-wrap items-center gap-3">
           <h1 className="text-3xl font-semibold tracking-tight text-white">
-            {DESK_NAME}
+            {HEADER_BRAND_NAME}
           </h1>
           <Badge className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-0.5 font-mono text-[10px] tracking-[0.2em] text-emerald-300 uppercase">
             Paper only

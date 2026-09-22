@@ -24,6 +24,7 @@ import type { DeskMessage } from "./types";
 const ALLOWED_USD = new Set([
   "$10k",
   "$5.30",
+  "$0",
   "$9,994.70",
   "$80.90",
   "$226",
@@ -122,6 +123,12 @@ describe("merge seed + blob", () => {
     );
     assert.ok(
       fromNull.messages.some((message) => message.id === "seed-ops-dashboard"),
+    );
+    assert.ok(
+      fromNull.messages.some((message) => message.id === "seed-risk-day2-eod"),
+    );
+    assert.ok(
+      fromNull.messages.some((message) => message.id === "seed-cos-day2-eod"),
     );
   });
 

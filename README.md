@@ -86,7 +86,7 @@ Do not add a live Alpaca base URL. The app will refuse to start if it sees `api.
 | GET | `/api/account` | `{ configured: false }` | Equity, cash, buying power, ROI vs $10k, risk, 30-day clock |
 | GET | `/api/positions` | `{ configured: false }` | Open positions |
 | GET | `/api/orders` | `{ configured: false }` | Recent orders / fills |
-| GET | `/api/portfolio/history` | `{ configured: false }` | Equity curve points from Alpaca |
+| GET | `/api/portfolio/history` | `{ configured: false }` | 30-day ET equity curve (Alpaca history + live equity when history lags) |
 
 ## Truthfulness
 

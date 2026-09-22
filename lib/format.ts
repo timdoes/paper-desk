@@ -1,3 +1,4 @@
+import { DESK_LENGTH_DAYS } from "@/lib/constants";
 import type { HistoryPoint } from "@/lib/types";
 
 export function parseBrokerNumber(
@@ -83,6 +84,74 @@ export function formatDeskDay(iso: string | null | undefined): string {
 }
 
 const EQUITY_CURVE_TIME_ZONE = "America/New_York";
+
+export function etCalendarDateKey(t: number): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: EQUITY_CURVE_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date(t));
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
+  if (!year || !month || !day) {
+    return "";
+  }
+  return `${year}-${month}-${day}`;
+}
+
+export function addCalendarDays(dateKey: string, days: number): string {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  if (!year || !month || !day) {
+    return dateKey;
+  }
+  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+}
+
+export function noonUtcForDateKey(dateKey: string): number {
+  return Date.parse(`${dateKey}T12:00:00.000Z`);
+}
+
+/**
+ * Alpaca 1D bars are timestamped at 00:00 UTC. The noon-UTC pin used for ET
+ * labels makes the session date the UTC Y-M-D (noon UTC is still morning ET).
+ */
+export function brokerSessionDateKey(t: number): string {
+  const date = new Date(t);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  date.setUTCHours(12, 0, 0, 0);
+  return date.toISOString().slice(0, 10);
+}
+
+export function equityCurveWindow(
+  now = Date.now(),
+  windowDays = DESK_LENGTH_DAYS,
+): {
+  startKey: string;
+  endKey: string;
+  startMs: number;
+  endMs: number;
+  ticks: number[];
+} {
+  const endKey = etCalendarDateKey(now);
+  const startKey = addCalendarDays(endKey, -(windowDays - 1));
+  const startMs = noonUtcForDateKey(startKey);
+  const endMs = noonUtcForDateKey(endKey);
+  const ticks: number[] = [];
+  const step = 5;
+  for (
+    let key = startKey;
+    key < endKey;
+    key = addCalendarDays(key, step)
+  ) {
+    ticks.push(noonUtcForDateKey(key));
+  }
+  ticks.push(endMs);
+  return { startKey, endKey, startMs, endMs, ticks };
+}
 
 /**
  * Alpaca 1D portfolio-history bars are timestamped at 00:00 UTC for that

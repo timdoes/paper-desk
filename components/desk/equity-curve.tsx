@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { DESK_NAME } from "@/lib/constants";
 import {
+  equityCurveWindow,
   formatEquityCurveDate,
   formatUsd,
   skipLeadingZeroEquity,
@@ -22,17 +23,18 @@ export function EquityCurve({ points }: { points: HistoryPoint[] }) {
   const data = skipLeadingZeroEquity(points).map((point) => ({
     t: point.t,
     equity: point.equity,
-    label: formatEquityCurveDate(point.t),
   }));
+  const last = data[data.length - 1];
+  const axis = last ? equityCurveWindow(last.t) : null;
 
   return (
     <GlassPanel className="h-full">
       <GlassHeader
         title="Equity curve"
-        description="Alpaca Paper portfolio history · 1M / 1D · dates in Eastern Time. Empty if the broker returned no points."
+        description="30-day window · dates in Eastern Time · latest point is live equity when Alpaca history lags."
       />
       <GlassBody className="h-[320px]">
-        {data.length === 0 ? (
+        {data.length === 0 || axis == null ? (
           <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-white/10 bg-black/20">
             <p className="max-w-sm text-center text-sm text-white/40">
               No equity history from Alpaca Paper yet. {DESK_NAME} will not draw
@@ -50,7 +52,11 @@ export function EquityCurve({ points }: { points: HistoryPoint[] }) {
               </defs>
               <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
               <XAxis
-                dataKey="label"
+                dataKey="t"
+                type="number"
+                domain={[axis.startMs, axis.endMs]}
+                ticks={axis.ticks}
+                tickFormatter={formatEquityCurveDate}
                 tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
@@ -71,9 +77,7 @@ export function EquityCurve({ points }: { points: HistoryPoint[] }) {
                   borderRadius: 12,
                   fontSize: 12,
                 }}
-                labelFormatter={(label) =>
-                  typeof label === "string" ? label : formatEquityCurveDate(Number(label))
-                }
+                labelFormatter={(label) => formatEquityCurveDate(Number(label))}
                 formatter={(value) => [
                   formatUsd(typeof value === "number" ? value : null),
                   "Equity",

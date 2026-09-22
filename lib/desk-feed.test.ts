@@ -21,7 +21,24 @@ import {
 } from "./desk-feed-store";
 import type { DeskMessage } from "./types";
 
-const ALLOWED_USD = new Set(["$10k", "$5.30", "$9,994.70", "$80.90"]);
+const ALLOWED_USD = new Set([
+  "$10k",
+  "$5.30",
+  "$9,994.70",
+  "$80.90",
+  "$226",
+  "$768",
+  "$81.75",
+  "$773.61",
+  "$82.71",
+  "$81.90",
+  "$770",
+  "$224.50",
+  "$228",
+  "$81.30",
+  "$81.50",
+  "$223",
+]);
 
 function memoryAdapter(initial: unknown = null): DeskFeedBlobAdapter {
   let stored: unknown = initial;
@@ -101,7 +118,10 @@ describe("merge seed + blob", () => {
     assert.equal(fromNull.messages[0]?.id, "seed-cos-open");
     assert.equal(
       fromNull.messages[fromNull.messages.length - 1]?.id,
-      "seed-ops-dashboard",
+      "seed-ops-dashboard-sep22",
+    );
+    assert.ok(
+      fromNull.messages.some((message) => message.id === "seed-ops-dashboard"),
     );
   });
 

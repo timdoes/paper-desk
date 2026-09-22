@@ -1,10 +1,12 @@
 import { alpacaFetch } from "@/lib/alpaca";
 import {
   buildAccountPayload,
+  shapeEquityCurvePoints,
   toHistoryPoints,
   toOrderView,
   toPositionView,
 } from "@/lib/desk";
+import { parseBrokerNumber } from "@/lib/format";
 import { keysConfigured } from "@/lib/paper-guard";
 import type {
   AlpacaAccount,
@@ -15,6 +17,9 @@ import type {
   PositionView,
   UnconfiguredPayload,
 } from "@/lib/types";
+
+const PORTFOLIO_HISTORY_PATH =
+  "/v2/account/portfolio/history?period=1M&timeframe=1D";
 
 export async function loadPositions() {
   const positions = await alpacaFetch<AlpacaPosition[]>("/v2/positions");
@@ -28,13 +33,21 @@ export async function loadOrders() {
   return orders.map(toOrderView);
 }
 
-export async function loadHistory() {
+export async function loadHistory(liveEquity?: number | null) {
   const history = await alpacaFetch<AlpacaPortfolioHistory>(
-    "/v2/account/portfolio/history?period=1M&timeframe=1D",
+    PORTFOLIO_HISTORY_PATH,
   );
+  const resolvedEquity =
+    liveEquity !== undefined
+      ? liveEquity
+      : parseBrokerNumber(
+          (await alpacaFetch<AlpacaAccount>("/v2/account")).equity,
+        );
   return {
     timeframe: history.timeframe ?? "1D",
-    points: toHistoryPoints(history),
+    points: shapeEquityCurvePoints(toHistoryPoints(history), {
+      liveEquity: resolvedEquity,
+    }),
   };
 }
 
@@ -55,7 +68,7 @@ export async function loadDeskSnapshot(): Promise<
     alpacaFetch<AlpacaAccount>("/v2/account"),
     loadPositions(),
     loadOrders(),
-    loadHistory(),
+    alpacaFetch<AlpacaPortfolioHistory>(PORTFOLIO_HISTORY_PATH),
   ]);
 
   const payload = buildAccountPayload(account, positions);
@@ -64,7 +77,12 @@ export async function loadDeskSnapshot(): Promise<
     ...payload,
     positions,
     orders,
-    history,
+    history: {
+      timeframe: history.timeframe ?? "1D",
+      points: shapeEquityCurvePoints(toHistoryPoints(history), {
+        liveEquity: payload.account.equity,
+      }),
+    },
   };
 }
 

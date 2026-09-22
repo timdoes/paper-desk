@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { formatEquityCurveDate, skipLeadingZeroEquity } from "./format";
+import {
+  addCalendarDays,
+  etCalendarDateKey,
+  equityCurveWindow,
+  formatEquityCurveDate,
+  skipLeadingZeroEquity,
+} from "./format";
 
 describe("formatEquityCurveDate", () => {
   it("labels a UTC-midnight Alpaca 1D bar as that UTC calendar day in ET", () => {
@@ -50,6 +56,27 @@ describe("formatEquityCurveDate", () => {
 
   it("returns an em dash for invalid timestamps", () => {
     assert.equal(formatEquityCurveDate(Number.NaN), "—");
+  });
+});
+
+describe("etCalendarDateKey", () => {
+  it("stays on the ET calendar date after 10pm Eastern", () => {
+    assert.equal(etCalendarDateKey(Date.parse("2026-09-23T02:00:00.000Z")), "2026-09-22");
+  });
+
+  it("uses the ET date, not the UTC date, around midnight", () => {
+    assert.equal(etCalendarDateKey(Date.parse("2026-09-22T03:30:00.000Z")), "2026-09-21");
+  });
+});
+
+describe("equityCurveWindow", () => {
+  it("is 30 inclusive ET days ending today", () => {
+    const window = equityCurveWindow(Date.parse("2026-09-22T16:00:00.000Z"));
+    assert.equal(window.startKey, "2026-08-24");
+    assert.equal(window.endKey, "2026-09-22");
+    assert.equal(addCalendarDays(window.startKey, 29), window.endKey);
+    assert.equal(formatEquityCurveDate(window.endMs), "Sep 22");
+    assert.equal(formatEquityCurveDate(window.startMs), "Aug 24");
   });
 });
 

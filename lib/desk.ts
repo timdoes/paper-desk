@@ -3,7 +3,13 @@ import {
   PAPER_API_BASE,
   TEST_STAKE_USD,
 } from "@/lib/constants";
-import { parseBrokerNumber } from "@/lib/format";
+import {
+  addCalendarDays,
+  brokerSessionDateKey,
+  equityCurveWindow,
+  noonUtcForDateKey,
+  parseBrokerNumber,
+} from "@/lib/format";
 import { deskRiskState } from "@/lib/risk";
 import type {
   AccountView,
@@ -128,6 +134,88 @@ export function toHistoryPoints(
     }
     const ms = t > 1_000_000_000_000 ? t : t * 1000;
     points.push({ t: ms, equity: value });
+  }
+
+  return points;
+}
+
+/**
+ * Build the desk equity series for a 30-day ET window ending today.
+ *
+ * Alpaca `1D` history is market days only and often lags the current ET date.
+ * Use broker bars where they exist. After the last bar, carry the last known
+ * equity through each ET calendar day. Prefer live `account.equity` for today
+ * so the right edge matches the KPI.
+ *
+ * Pre-funding days inside the window are omitted (start at the first funded
+ * bar). A flat $10k pad after DESK_START would also be honest, but we do not
+ * assume the account was funded then. Never interpolate a zigzag between
+ * broker values.
+ */
+export function shapeEquityCurvePoints(
+  brokerPoints: HistoryPoint[],
+  options: {
+    liveEquity: number | null;
+    now?: number;
+    windowDays?: number;
+  },
+): HistoryPoint[] {
+  const now = options.now ?? Date.now();
+  const windowDays = options.windowDays ?? DESK_LENGTH_DAYS;
+  const { startKey, endKey } = equityCurveWindow(now, windowDays);
+  const liveEquity =
+    options.liveEquity != null && Number.isFinite(options.liveEquity)
+      ? options.liveEquity
+      : null;
+
+  const byDay = new Map<string, number>();
+  for (const point of brokerPoints) {
+    const key = brokerSessionDateKey(point.t);
+    if (!key || !Number.isFinite(point.equity)) {
+      continue;
+    }
+    byDay.set(key, point.equity);
+  }
+
+  const dayKeys = [...byDay.keys()].sort();
+  let firstFundedKey: string | null = null;
+  for (const key of dayKeys) {
+    if (byDay.get(key) !== 0) {
+      firstFundedKey = key;
+      break;
+    }
+  }
+
+  if (firstFundedKey == null) {
+    if (liveEquity == null) {
+      return [];
+    }
+    return [{ t: noonUtcForDateKey(endKey), equity: liveEquity }];
+  }
+
+  const seriesStartKey = firstFundedKey < startKey ? startKey : firstFundedKey;
+  let lastKnown: number | null = null;
+  for (const key of dayKeys) {
+    if (key > seriesStartKey) {
+      break;
+    }
+    lastKnown = byDay.get(key) ?? lastKnown;
+  }
+
+  const points: HistoryPoint[] = [];
+  for (
+    let key = seriesStartKey;
+    key <= endKey;
+    key = addCalendarDays(key, 1)
+  ) {
+    if (byDay.has(key)) {
+      lastKnown = byDay.get(key) ?? lastKnown;
+    }
+    const equity = key === endKey && liveEquity != null ? liveEquity : lastKnown;
+    if (equity == null || !Number.isFinite(equity)) {
+      continue;
+    }
+    points.push({ t: noonUtcForDateKey(key), equity });
   }
 
   return points;

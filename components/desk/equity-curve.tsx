@@ -10,25 +10,26 @@ import {
   YAxis,
 } from "recharts";
 import { DESK_NAME } from "@/lib/constants";
-import { formatUsd } from "@/lib/format";
+import {
+  formatEquityCurveDate,
+  formatUsd,
+  skipLeadingZeroEquity,
+} from "@/lib/format";
 import type { HistoryPoint } from "@/lib/types";
 import { GlassBody, GlassHeader, GlassPanel } from "@/components/desk/glass-panel";
 
 export function EquityCurve({ points }: { points: HistoryPoint[] }) {
-  const data = points.map((point) => ({
+  const data = skipLeadingZeroEquity(points).map((point) => ({
     t: point.t,
     equity: point.equity,
-    label: new Date(point.t).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    }),
+    label: formatEquityCurveDate(point.t),
   }));
 
   return (
     <GlassPanel className="h-full">
       <GlassHeader
         title="Equity curve"
-        description="Alpaca Paper portfolio history · 1M / 1D. Empty if the broker returned no points."
+        description="Alpaca Paper portfolio history · 1M / 1D · dates in Eastern Time. Empty if the broker returned no points."
       />
       <GlassBody className="h-[320px]">
         {data.length === 0 ? (
@@ -70,6 +71,9 @@ export function EquityCurve({ points }: { points: HistoryPoint[] }) {
                   borderRadius: 12,
                   fontSize: 12,
                 }}
+                labelFormatter={(label) =>
+                  typeof label === "string" ? label : formatEquityCurveDate(Number(label))
+                }
                 formatter={(value) => [
                   formatUsd(typeof value === "number" ? value : null),
                   "Equity",

@@ -1,3 +1,5 @@
+import type { HistoryPoint } from "@/lib/types";
+
 export function parseBrokerNumber(
   value: string | number | null | undefined,
 ): number | null {
@@ -78,4 +80,32 @@ export function formatDeskDay(iso: string | null | undefined): string {
     hour: "2-digit",
     minute: "2-digit",
   }).format(date);
+}
+
+const EQUITY_CURVE_TIME_ZONE = "America/New_York";
+
+/**
+ * Alpaca 1D portfolio-history bars are timestamped at 00:00 UTC for that
+ * calendar date. Formatting that instant in America/New_York (the desk clock)
+ * rolls back to the previous evening — 2026-09-19T00:00:00Z is Sep 18 8:00 PM
+ * EDT. Pin the instant to noon UTC on the same UTC Y-M-D so ET labels match
+ * the bar's intended session date (Sep 19).
+ */
+export function formatEquityCurveDate(t: number): string {
+  const date = new Date(t);
+  if (Number.isNaN(date.getTime())) {
+    return "—";
+  }
+  date.setUTCHours(12, 0, 0, 0);
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: EQUITY_CURVE_TIME_ZONE,
+  });
+}
+
+/** Drop leading $0 bars so the curve starts on the first funded session day. */
+export function skipLeadingZeroEquity(points: HistoryPoint[]): HistoryPoint[] {
+  const firstFunded = points.findIndex((point) => point.equity !== 0);
+  return firstFunded <= 0 ? points : points.slice(firstFunded);
 }

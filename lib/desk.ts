@@ -147,10 +147,10 @@ export function toHistoryPoints(
  * equity through each ET calendar day. Prefer live `account.equity` for today
  * so the right edge matches the KPI.
  *
- * Pre-funding days inside the window are omitted (start at the first funded
- * bar). A flat $10k pad after DESK_START would also be honest, but we do not
- * assume the account was funded then. Never interpolate a zigzag between
- * broker values.
+ * Days from the window start through the day before the first funded bar are
+ * padded with that first funded equity (flat). That is domain padding so the
+ * teal line starts at the left tick — not invented P&L before funding, and
+ * not a $0 crash. Never interpolate a zigzag between broker values.
  */
 export function shapeEquityCurvePoints(
   brokerPoints: HistoryPoint[],
@@ -186,33 +186,32 @@ export function shapeEquityCurvePoints(
     }
   }
 
-  if (firstFundedKey == null) {
-    if (liveEquity == null) {
-      return [];
-    }
-    return [{ t: noonUtcForDateKey(endKey), equity: liveEquity }];
+  const firstFundedEquity =
+    firstFundedKey != null ? byDay.get(firstFundedKey) ?? null : liveEquity;
+  if (firstFundedEquity == null || !Number.isFinite(firstFundedEquity)) {
+    return [];
   }
 
-  const seriesStartKey = firstFundedKey < startKey ? startKey : firstFundedKey;
-  let lastKnown: number | null = null;
-  for (const key of dayKeys) {
-    if (key > seriesStartKey) {
-      break;
+  let lastKnown = firstFundedEquity;
+  if (firstFundedKey != null && firstFundedKey < startKey) {
+    for (const key of dayKeys) {
+      if (key > startKey) {
+        break;
+      }
+      const value = byDay.get(key);
+      if (value != null && key >= firstFundedKey) {
+        lastKnown = value;
+      }
     }
-    lastKnown = byDay.get(key) ?? lastKnown;
   }
 
   const points: HistoryPoint[] = [];
-  for (
-    let key = seriesStartKey;
-    key <= endKey;
-    key = addCalendarDays(key, 1)
-  ) {
-    if (byDay.has(key)) {
+  for (let key = startKey; key <= endKey; key = addCalendarDays(key, 1)) {
+    if (firstFundedKey != null && key >= firstFundedKey && byDay.has(key)) {
       lastKnown = byDay.get(key) ?? lastKnown;
     }
     const equity = key === endKey && liveEquity != null ? liveEquity : lastKnown;
-    if (equity == null || !Number.isFinite(equity)) {
+    if (!Number.isFinite(equity)) {
       continue;
     }
     points.push({ t: noonUtcForDateKey(key), equity });

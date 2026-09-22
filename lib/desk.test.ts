@@ -34,7 +34,10 @@ describe("shapeEquityCurvePoints", () => {
       { liveEquity: 10_042.18, now },
     );
 
-    assert.deepEqual(points, [
+    assert.equal(points.length, 30);
+    assert.equal(formatEquityCurveDate(points[0]!.t), "Aug 24");
+    assert.equal(points[0]!.equity, 10_000);
+    assert.deepEqual(points.slice(-4), [
       { t: noonUtcForDateKey("2026-09-19"), equity: 10_000 },
       { t: noonUtcForDateKey("2026-09-20"), equity: 10_000 },
       { t: noonUtcForDateKey("2026-09-21"), equity: 10_000 },
@@ -50,7 +53,8 @@ describe("shapeEquityCurvePoints", () => {
       { liveEquity: 9_980, now: lateEt },
     );
 
-    assert.equal(formatEquityCurveDate(points[0]!.t), "Sep 19");
+    assert.equal(formatEquityCurveDate(points[0]!.t), "Aug 24");
+    assert.equal(points[0]!.equity, 10_000);
     assert.equal(formatEquityCurveDate(points[points.length - 1]!.t), "Sep 22");
     assert.equal(points[points.length - 1]!.equity, 9_980);
   });
@@ -68,7 +72,7 @@ describe("shapeEquityCurvePoints", () => {
     assert.equal(formatEquityCurveDate(points[points.length - 1]!.t), "Sep 22");
   });
 
-  it("starts at the first funded day instead of inventing a pre-funding path", () => {
+  it("pads the window start with first funded equity so the line starts at the left tick", () => {
     const points = shapeEquityCurvePoints(
       [
         { t: Date.parse("2026-08-24T00:00:00.000Z"), equity: 0 },
@@ -79,12 +83,19 @@ describe("shapeEquityCurvePoints", () => {
       { liveEquity: 10_090, now },
     );
 
-    assert.equal(formatEquityCurveDate(points[0]!.t), "Sep 19");
+    assert.equal(points.length, 30);
+    assert.equal(formatEquityCurveDate(points[0]!.t), "Aug 24");
     assert.equal(points[0]!.equity, 10_000);
-    assert.equal(points[1]!.equity, 10_000);
-    assert.equal(formatEquityCurveDate(points[1]!.t), "Sep 20");
-    assert.equal(points[2]!.equity, 10_080);
-    assert.equal(points[3]!.equity, 10_090);
+    const sep18 = points.find((point) => formatEquityCurveDate(point.t) === "Sep 18");
+    const sep19 = points.find((point) => formatEquityCurveDate(point.t) === "Sep 19");
+    const sep20 = points.find((point) => formatEquityCurveDate(point.t) === "Sep 20");
+    const sep21 = points.find((point) => formatEquityCurveDate(point.t) === "Sep 21");
+    assert.equal(sep18?.equity, 10_000);
+    assert.equal(sep19?.equity, 10_000);
+    assert.equal(sep20?.equity, 10_000);
+    assert.equal(sep21?.equity, 10_080);
+    assert.equal(points[points.length - 1]!.equity, 10_090);
+    assert.equal(formatEquityCurveDate(points[points.length - 1]!.t), "Sep 22");
   });
 
   it("fills a 30-day window from older funded history without zigzag gaps", () => {
@@ -132,9 +143,10 @@ describe("shapeEquityCurvePoints", () => {
       { liveEquity: 10_000, now },
     );
 
-    assert.deepEqual(points, [
-      { t: noonUtcForDateKey("2026-09-22"), equity: 10_000 },
-    ]);
+    assert.equal(points.length, 30);
+    assert.equal(formatEquityCurveDate(points[0]!.t), "Aug 24");
+    assert.ok(points.every((point) => point.equity === 10_000));
+    assert.equal(formatEquityCurveDate(points[points.length - 1]!.t), "Sep 22");
   });
 
   it("returns no points when history is unfunded and live equity is missing", () => {
@@ -153,6 +165,9 @@ describe("shapeEquityCurvePoints", () => {
       { liveEquity: null, now },
     );
 
+    assert.equal(points.length, 30);
+    assert.equal(formatEquityCurveDate(points[0]!.t), "Aug 24");
+    assert.equal(points[0]!.equity, 10_000);
     assert.equal(points[points.length - 1]!.equity, 10_000);
     assert.equal(formatEquityCurveDate(points[points.length - 1]!.t), "Sep 22");
   });

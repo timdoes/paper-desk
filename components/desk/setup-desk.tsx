@@ -34,7 +34,7 @@ export function SetupDesk() {
       <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col justify-center px-6 py-16">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="font-mono text-[11px] tracking-[0.28em] text-emerald-300/80 uppercase">
+            <p className="font-mono text-[11px] tracking-[0.28em] text-emerald-300/80">
               {DESK_OWNER} · maximize-ROI test
             </p>
             <h1 className="mt-2 font-sans text-5xl font-semibold tracking-tight text-white sm:text-6xl">
@@ -61,7 +61,7 @@ export function SetupDesk() {
               <div className="flex items-start gap-3">
                 <TriangleAlert className="mt-0.5 size-4 shrink-0 text-amber-300" />
                 <p>
-                  Keys are missing, so Paper Desk will not call Alpaca and will
+                  Keys are missing, so {DESK_NAME} will not call Alpaca and will
                   not paint a fake book. GET{" "}
                   <code className="font-mono text-amber-100">/api/account</code>{" "}
                   returns{" "}

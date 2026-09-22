@@ -29,7 +29,7 @@ export function PaperGuardDesk({ message }: { message: string }) {
               <ShieldX className="mt-0.5 size-5 text-rose-300" />
               <div>
                 <p className="text-sm font-medium text-rose-100">
-                  Paper Desk hard-failed before talking to a broker.
+                  {DESK_NAME} hard-failed before talking to a broker.
                 </p>
                 <p className="mt-2 font-mono text-xs leading-6 text-rose-100/80">
                   {message}

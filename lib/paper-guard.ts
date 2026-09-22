@@ -1,4 +1,4 @@
-import { LIVE_ALPACA_HOST, PAPER_ALPACA_HOST } from "./constants";
+import { DESK_NAME, LIVE_ALPACA_HOST, PAPER_ALPACA_HOST } from "./constants";
 
 export class PaperGuardError extends Error {
   readonly code = "PAPER_GUARD";
@@ -38,7 +38,7 @@ export function assertPaperOnly(
 ): void {
   if (env.ALPACA_PAPER !== "true") {
     throw new PaperGuardError(
-      "ALPACA_PAPER must be exactly 'true'. Paper Desk will not talk to a broker without an explicit paper flag.",
+      `ALPACA_PAPER must be exactly 'true'. ${DESK_NAME} will not talk to a broker without an explicit paper flag.`,
     );
   }
 
@@ -48,7 +48,7 @@ export function assertPaperOnly(
     }
     if (pointsAtLiveAlpaca(value)) {
       throw new PaperGuardError(
-        `${name} points at live Alpaca (${LIVE_ALPACA_HOST}). Paper Desk hard-fails rather than send a live request.`,
+        `${name} points at live Alpaca (${LIVE_ALPACA_HOST}). ${DESK_NAME} hard-fails rather than send a live request.`,
       );
     }
   }

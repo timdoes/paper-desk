@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { DESK_NAME, DESK_OWNER } from "@/lib/constants";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,9 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Paper Desk",
-  description:
-    "Tim Gaines · $10,000 / 30-day Alpaca Paper maximize-ROI desk. Paper trading only.",
+  title: DESK_NAME,
+  description: `${DESK_OWNER} · $10,000 / 30-day Alpaca Paper maximize-ROI desk. Paper trading only.`,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

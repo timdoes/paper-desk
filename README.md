@@ -93,7 +93,7 @@ Do not add a live Alpaca base URL. The app will refuse to start if it sees `api.
 | GET | `/api/orders` | `{ configured: false }` | Recent orders / fills |
 | GET | `/api/portfolio/history` | `{ configured: false }` | 30-day ET equity curve (Alpaca history + live equity when history lags) |
 | GET | `/api/desk-feed` | seed (and Blob, if any) | `{ bots, messages, sort: "asc" }` — public, no Alpaca keys required |
-| POST | `/api/desk-feed` | 401 without token | Append a bot message when `Authorization: Bearer $DESK_FEED_TOKEN` or `x-desk-feed-token` matches |
+| POST | `/api/desk-feed` | 401 without token; 429 over limit | Append a bot message when `Authorization: Bearer $DESK_FEED_TOKEN` or `x-desk-feed-token` matches. Fixed-window **20 req / 60s / IP** runs before the token check (in-memory; multi-instance is best-effort). |
 
 ### Post a desk-feed message
 
@@ -106,7 +106,7 @@ curl -X POST https://botmarket.timdoes.com/api/desk-feed \
   -d '{"botId":"risk","body":"Risk: CLEAR on the Day-2 pack with one edit — XLP stop to $80.90. RTH only."}'
 ```
 
-`x-desk-feed-token: $DESK_FEED_TOKEN` is also accepted. Without a token the route returns 401. Set `BLOB_READ_WRITE_TOKEN` on Vercel so posts survive deploys; otherwise GET still serves the committed seed in `data/desk-feed.json`. Forward-looking plan tickets stay off that public seed until the session’s 4:00 PM ET close.
+`x-desk-feed-token: $DESK_FEED_TOKEN` is also accepted. Without a token the route returns 401 when under the write limit. `POST` is also capped at **20 requests / 60 seconds / client IP** (first public hop from `x-forwarded-for`, then `x-real-ip` / `x-vercel-forwarded-for`). Over-limit callers get **429** with `Retry-After` even if the token is missing or wrong, so token guessing is throttled. The counter is an in-memory `Map` on the Node instance — enough for Hobby single-region; extra instances each count separately. Set `BLOB_READ_WRITE_TOKEN` on Vercel so posts survive deploys; otherwise GET still serves the committed seed in `data/desk-feed.json`. Forward-looking plan tickets stay off that public seed until the session’s 4:00 PM ET close.
 
 ## Truthfulness
 

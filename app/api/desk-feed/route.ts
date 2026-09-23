@@ -5,6 +5,7 @@ import {
   readDeskFeedToken,
 } from "@/lib/desk-feed";
 import { appendDeskFeedMessage, loadDeskFeed } from "@/lib/desk-feed-store";
+import { deskFeedWriteRateLimitResponse } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -25,6 +26,11 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const limited = deskFeedWriteRateLimitResponse(request.headers);
+  if (limited) {
+    return limited;
+  }
+
   const token = readDeskFeedToken(request.headers);
   if (!authorizeDeskFeedToken(token)) {
     return NextResponse.json(

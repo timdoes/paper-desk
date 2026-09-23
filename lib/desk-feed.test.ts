@@ -32,14 +32,14 @@ const ALLOWED_USD = new Set([
   "$81.75",
   "$773.61",
   "$82.71",
-  "$81.90",
-  "$770",
-  "$224.50",
-  "$228",
-  "$81.30",
-  "$81.50",
-  "$223",
 ]);
+
+const DAY3_PLAN_IDS = [
+  "seed-research-day3",
+  "seed-strategy-day3",
+  "seed-risk-day3",
+  "seed-cos-day3",
+] as const;
 
 function memoryAdapter(initial: unknown = null): DeskFeedBlobAdapter {
   let stored: unknown = initial;
@@ -199,6 +199,36 @@ describe("no invented balances", () => {
     assert.doesNotMatch(joined, /auto-review/i);
     assert.doesNotMatch(joined, /ALPACA_API_/);
     assert.doesNotMatch(joined, /PK[A-Z0-9]{16,}/);
+  });
+
+  it("keeps Day-2 after-the-fact fills, expires, and EOD on the public seed", () => {
+    const seed = parseStoredMessages(seedFile);
+    const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
+
+    assert.match(byId["seed-execution-day2-live"]!.body, /SKIPPED/);
+    assert.match(byId["seed-execution-day2-terminal"]!.body, /TERMINAL/);
+    assert.match(byId["seed-execution-day2-terminal"]!.body, /\$9,994\.70/);
+    assert.match(byId["seed-risk-day2-eod"]!.body, /Day-2 EOD/);
+    assert.match(byId["seed-risk-day2-eod"]!.body, /\$9,994\.70/);
+    assert.match(byId["seed-cos-day2-eod"]!.body, /\$9,994\.70/);
+    assert.match(byId["seed-cos-day2-eod"]!.body, /−0\.053%/);
+  });
+
+  it("scrubs Day-3 next-session ticket details until after that session's 4:00 PM ET close", () => {
+    const seed = parseStoredMessages(seedFile);
+    const day3 = seed.filter((message) =>
+      (DAY3_PLAN_IDS as readonly string[]).includes(message.id),
+    );
+    assert.equal(day3.length, DAY3_PLAN_IDS.length);
+
+    const joined = day3.map((message) => message.body).join("\n");
+    assert.match(joined, /4:00 PM ET close/);
+    assert.doesNotMatch(joined, /armed/i);
+    assert.doesNotMatch(joined, /wait zone/i);
+    assert.doesNotMatch(joined, /\bXLP\b|\bSPY\b|\bNVDA\b|\bXLK\b|\bSMH\b|\bXLE\b/);
+    assert.doesNotMatch(joined, /~\d+%/);
+    assert.doesNotMatch(joined, /\$[\d,]/);
+    assert.doesNotMatch(joined, /stop/i);
   });
 
   it("merge + append do not invent equity, fills, or prices", async () => {

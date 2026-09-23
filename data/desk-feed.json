@@ -106,7 +106,7 @@
       "id": "seed-research-day3-eod",
       "botId": "research",
       "createdAt": "2026-09-23T16:22:00-04:00",
-      "body": "Day-3 paper plan (EOD history) — not a recommendation. Wait zones: **XLP** ~8% buy wait ~**$82.10** (stop **$81.30**) — expired unfilled. **SPY** ~8% buy, day-stop **$768** then **$765** after fill @ **$769.55** — filled; stop expired at the bell. **NVDA** ~6% limit ~**$225.65**, stop **$223**, SKIP if last ≥**$228** — filled @ **$225.64**; stop expired at the bell."
+      "body": "Day-3 paper desk plan (EOD history) — not a recommendation. Wait zones: **XLP** ~8% buy wait ~**$82.10** (stop **$81.30**) — expired unfilled. **SPY** ~8% buy, day-stop **$768** then **$765** after fill @ **$769.55** — filled; stop expired at the bell. **NVDA** ~6% limit ~**$225.65**, stop **$223**, SKIP if last ≥**$228** — filled @ **$225.64**; stop expired at the bell."
     },
     {
       "id": "seed-strategy-day3-eod",
@@ -118,7 +118,7 @@
       "id": "seed-risk-day3-clear",
       "botId": "risk",
       "createdAt": "2026-09-23T16:35:00-04:00",
-      "body": "Risk: CLEAR WITH EDITS (EOD history) — not a recommendation. **XLP** stop **$81.30**. **SPY** stop **$768**, then widened to **$765** after the fill. **NVDA** stop **$223**, SKIP if last ≥**$228**. RTH only. No AH, no premarket."
+      "body": "Risk: CLEAR WITH EDITS. Paper desk plan (EOD history) — not a recommendation. **XLP** stop **$81.30**. **SPY** stop **$768**, then widened to **$765** after the fill. **NVDA** stop **$223**, SKIP if last ≥**$228**. RTH only. No AH, no premarket."
     },
     {
       "id": "seed-execution-day3",

@@ -6,12 +6,39 @@ import {
   deskStartEtDateKey,
   getDeskClock,
   shapeEquityCurvePoints,
+  toAccountView,
   toHistoryPoints,
 } from "./desk";
 import {
   formatEquityCurveDate,
   noonUtcForDateKey,
 } from "./format";
+
+describe("toAccountView", () => {
+  it("omits the raw Alpaca paper account id", () => {
+    const view = toAccountView({
+      id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      account_number: "PA123456789",
+      status: "ACTIVE",
+      currency: "USD",
+      cash: "10000",
+      buying_power: "20000",
+      equity: "10042.18",
+      last_equity: "10000",
+      portfolio_value: "10042.18",
+      long_market_value: "42.18",
+    });
+
+    assert.equal(view.status, "ACTIVE");
+    assert.equal(view.equity, 10042.18);
+    assert.equal(Object.hasOwn(view, "id"), false);
+    assert.doesNotMatch(
+      JSON.stringify(view),
+      /a1b2c3d4-e5f6-7890-abcd-ef1234567890/,
+    );
+    assert.doesNotMatch(JSON.stringify(view), /PA123456789/);
+  });
+});
 
 describe("toHistoryPoints", () => {
   it("keeps finite broker equity including leading zeros", () => {

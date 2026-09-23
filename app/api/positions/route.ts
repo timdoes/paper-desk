@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-import { handleRouteError, requireConfigured } from "@/lib/http";
+import { handleRouteError, jsonPrivate, requireConfigured } from "@/lib/http";
 import { loadPositions } from "@/lib/snapshot";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +12,7 @@ export async function GET() {
 
   try {
     const positions = await loadPositions();
-    return NextResponse.json({ configured: true, positions });
+    return jsonPrivate({ configured: true, positions });
   } catch (error) {
     return handleRouteError(error);
   }

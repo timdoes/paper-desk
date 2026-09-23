@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import { DESK_LENGTH_DAYS, EQUITY_CURVE_WINDOW_DAYS } from "./constants";
 import {
+  deskFundedEtDateKey,
   deskStartEtDateKey,
+  getDeskClock,
   shapeEquityCurvePoints,
   toHistoryPoints,
 } from "./desk";
@@ -31,6 +34,10 @@ describe("deskStartEtDateKey", () => {
       deskStartEtDateKey("2026-09-19T01:19:00-04:00"),
       "2026-09-19",
     );
+    assert.equal(
+      deskStartEtDateKey("2026-09-20T00:00:00-04:00"),
+      "2026-09-20",
+    );
   });
 
   it("returns null when the start is missing or invalid", () => {
@@ -40,9 +47,80 @@ describe("deskStartEtDateKey", () => {
   });
 });
 
+describe("deskFundedEtDateKey", () => {
+  it("prefers first-funded over mandate start", () => {
+    assert.equal(
+      deskFundedEtDateKey(
+        "2026-09-19T01:19:00-04:00",
+        "2026-09-20T00:00:00-04:00",
+      ),
+      "2026-09-19",
+    );
+  });
+
+  it("falls back to mandate start when funded is unset", () => {
+    assert.equal(
+      deskFundedEtDateKey(null, "2026-09-20T00:00:00-04:00"),
+      "2026-09-20",
+    );
+  });
+});
+
+describe("getDeskClock", () => {
+  const mandateStart = "2026-09-20T00:00:00-04:00";
+
+  it("is a 28-day Sunday-to-Sunday mandate", () => {
+    const clock = getDeskClock(
+      mandateStart,
+      Date.parse("2026-09-20T00:00:00-04:00"),
+    );
+    assert.equal(clock.configured, true);
+    assert.equal(clock.totalDays, DESK_LENGTH_DAYS);
+    assert.equal(DESK_LENGTH_DAYS, 28);
+    if (clock.configured) {
+      assert.equal(clock.startIso, "2026-09-20T04:00:00.000Z");
+      assert.equal(clock.endsAt, "2026-10-18T04:00:00.000Z");
+      assert.equal(clock.daysLeft, 28);
+    }
+  });
+
+  it("counts whole days remaining through first RTH Monday", () => {
+    const clock = getDeskClock(
+      mandateStart,
+      Date.parse("2026-09-21T13:30:00-04:00"),
+    );
+    assert.equal(clock.configured, true);
+    if (clock.configured) {
+      assert.equal(clock.daysLeft, 27);
+      assert.equal(clock.totalDays, 28);
+    }
+  });
+
+  it("hits zero at the Sunday cohort end", () => {
+    const clock = getDeskClock(
+      mandateStart,
+      Date.parse("2026-10-18T00:00:00-04:00"),
+    );
+    assert.equal(clock.configured, true);
+    if (clock.configured) {
+      assert.equal(clock.daysLeft, 0);
+    }
+  });
+
+  it("still reports totalDays when the start is unset", () => {
+    const clock = getDeskClock("", Date.parse("2026-09-21T13:30:00-04:00"));
+    assert.equal(clock.configured, false);
+    assert.equal(clock.totalDays, 28);
+    assert.equal(clock.daysLeft, null);
+  });
+});
+
 describe("shapeEquityCurvePoints", () => {
   const now = Date.parse("2026-09-22T16:00:00.000Z"); // noon ET on Tue Sep 22
-  const isolated = { deskStartIso: null as string | null };
+  const isolated = {
+    deskStartIso: null as string | null,
+    deskFundedIso: null as string | null,
+  };
 
   function equityOn(points: { t: number; equity: number }[], label: string) {
     return points.find((point) => formatEquityCurveDate(point.t) === label)
@@ -59,7 +137,7 @@ describe("shapeEquityCurvePoints", () => {
       { liveEquity: 10_042.18, now, ...isolated },
     );
 
-    assert.equal(points.length, 30);
+    assert.equal(points.length, EQUITY_CURVE_WINDOW_DAYS);
     assert.equal(formatEquityCurveDate(points[0]!.t), "Aug 24");
     assert.equal(points[0]!.equity, 0);
     assert.equal(equityOn(points, "Sep 18"), 0);
@@ -109,7 +187,7 @@ describe("shapeEquityCurvePoints", () => {
       { liveEquity: 10_090, now, ...isolated },
     );
 
-    assert.equal(points.length, 30);
+    assert.equal(points.length, EQUITY_CURVE_WINDOW_DAYS);
     assert.equal(formatEquityCurveDate(points[0]!.t), "Aug 24");
     assert.ok(
       points
@@ -132,6 +210,49 @@ describe("shapeEquityCurvePoints", () => {
     );
   });
 
+  it("uses first-funded when mandate Sunday is later than Saturday funding", () => {
+    const points = shapeEquityCurvePoints(
+      [
+        { t: Date.parse("2026-09-18T00:00:00.000Z"), equity: 10_000 },
+        { t: Date.parse("2026-09-19T00:00:00.000Z"), equity: 10_012 },
+        { t: Date.parse("2026-09-21T00:00:00.000Z"), equity: 10_080 },
+      ],
+      {
+        liveEquity: 10_090,
+        now,
+        deskStartIso: "2026-09-20T00:00:00-04:00",
+        deskFundedIso: "2026-09-19T01:19:00-04:00",
+      },
+    );
+
+    assert.equal(points.length, EQUITY_CURVE_WINDOW_DAYS);
+    assert.equal(equityOn(points, "Sep 18"), 0);
+    assert.equal(equityOn(points, "Sep 19"), 10_012);
+    assert.equal(equityOn(points, "Sep 20"), 10_012);
+    assert.equal(equityOn(points, "Sep 21"), 10_080);
+    assert.equal(points[points.length - 1]!.equity, 10_090);
+  });
+
+  it("zeros Saturday when only the Sunday mandate start is set", () => {
+    const points = shapeEquityCurvePoints(
+      [
+        { t: Date.parse("2026-09-18T00:00:00.000Z"), equity: 10_000 },
+        { t: Date.parse("2026-09-19T00:00:00.000Z"), equity: 10_012 },
+        { t: Date.parse("2026-09-21T00:00:00.000Z"), equity: 10_080 },
+      ],
+      {
+        liveEquity: 10_090,
+        now,
+        deskStartIso: "2026-09-20T00:00:00-04:00",
+        deskFundedIso: null,
+      },
+    );
+
+    assert.equal(equityOn(points, "Sep 19"), 0);
+    assert.equal(equityOn(points, "Sep 20"), 10_012);
+    assert.equal(equityOn(points, "Sep 21"), 10_080);
+  });
+
   it("uses DESK_START_ISO as the first nonzero day when it is set", () => {
     const points = shapeEquityCurvePoints(
       [
@@ -146,7 +267,7 @@ describe("shapeEquityCurvePoints", () => {
       },
     );
 
-    assert.equal(points.length, 30);
+    assert.equal(points.length, EQUITY_CURVE_WINDOW_DAYS);
     assert.equal(equityOn(points, "Sep 18"), 0);
     assert.equal(equityOn(points, "Sep 19"), 10_012);
     assert.equal(equityOn(points, "Sep 20"), 10_012);
@@ -218,7 +339,7 @@ describe("shapeEquityCurvePoints", () => {
       ...isolated,
     });
 
-    assert.equal(points.length, 30);
+    assert.equal(points.length, EQUITY_CURVE_WINDOW_DAYS);
     assert.equal(formatEquityCurveDate(points[0]!.t), "Aug 24");
     assert.equal(formatEquityCurveDate(points[points.length - 1]!.t), "Sep 22");
     assert.equal(points[points.length - 1]!.equity, 10_500);
@@ -241,7 +362,7 @@ describe("shapeEquityCurvePoints", () => {
       { liveEquity: 10_000, now, ...isolated },
     );
 
-    assert.equal(points.length, 30);
+    assert.equal(points.length, EQUITY_CURVE_WINDOW_DAYS);
     assert.equal(formatEquityCurveDate(points[0]!.t), "Aug 24");
     assert.equal(points[0]!.equity, 0);
     assert.ok(points.slice(0, -1).every((point) => point.equity === 0));
@@ -265,7 +386,7 @@ describe("shapeEquityCurvePoints", () => {
       { liveEquity: null, now, ...isolated },
     );
 
-    assert.equal(points.length, 30);
+    assert.equal(points.length, EQUITY_CURVE_WINDOW_DAYS);
     assert.equal(formatEquityCurveDate(points[0]!.t), "Aug 24");
     assert.equal(points[0]!.equity, 0);
     assert.equal(equityOn(points, "Sep 19"), 10_000);

@@ -1,5 +1,6 @@
 import {
   DESK_LENGTH_DAYS,
+  EQUITY_CURVE_WINDOW_DAYS,
   PAPER_API_BASE,
   TEST_STAKE_USD,
 } from "@/lib/constants";
@@ -24,7 +25,7 @@ import type {
   PositionView,
 } from "@/lib/types";
 
-/** ET calendar date when the experiment starts, if `DESK_START_ISO` is valid. */
+/** ET calendar date of a desk ISO timestamp, if the value is valid. */
 export function deskStartEtDateKey(
   startIso: string | null | undefined = process.env.DESK_START_ISO,
 ): string | null {
@@ -37,6 +38,17 @@ export function deskStartEtDateKey(
     return null;
   }
   return etCalendarDateKey(start);
+}
+
+/**
+ * Equity-curve $0-before date: first-funded (`DESK_FUNDED_ISO`) when set,
+ * otherwise the mandate start (`DESK_START_ISO`).
+ */
+export function deskFundedEtDateKey(
+  fundedIso: string | null | undefined = process.env.DESK_FUNDED_ISO,
+  startIso: string | null | undefined = process.env.DESK_START_ISO,
+): string | null {
+  return deskStartEtDateKey(fundedIso) ?? deskStartEtDateKey(startIso);
 }
 
 export function getDeskClock(
@@ -156,17 +168,19 @@ export function toHistoryPoints(
 }
 
 /**
- * Build the desk equity series for a 30-day ET window ending today.
+ * Build the desk equity series for a rolling ET window ending today.
+ * Window length is `EQUITY_CURVE_WINDOW_DAYS` (30), not the 28-day mandate.
  *
  * Alpaca `1D` history is market days only and often lags the current ET date.
  * Use broker bars where they exist. After the last bar, carry the last known
  * equity through each ET calendar day. Prefer live `account.equity` for today
  * so the right edge matches the KPI.
  *
- * Days before experiment start (`DESK_START_ISO`) or, if that is unset, the
- * first funded broker bar stay at $0 — the original Alpaca lead-in. From that
- * start day onward the series is the real path. Never carry first-funded
- * equity back across the unfunded lead-in, and never interpolate a zigzag.
+ * Days before first-funded (`DESK_FUNDED_ISO`) or, if that is unset, mandate
+ * start (`DESK_START_ISO`) or the first funded broker bar stay at $0 — the
+ * original Alpaca lead-in. From that start day onward the series is the real
+ * path. Never carry first-funded equity back across the unfunded lead-in, and
+ * never interpolate a zigzag.
  */
 export function shapeEquityCurvePoints(
   brokerPoints: HistoryPoint[],
@@ -175,20 +189,25 @@ export function shapeEquityCurvePoints(
     now?: number;
     windowDays?: number;
     deskStartIso?: string | null;
+    deskFundedIso?: string | null;
   },
 ): HistoryPoint[] {
   const now = options.now ?? Date.now();
-  const windowDays = options.windowDays ?? DESK_LENGTH_DAYS;
+  const windowDays = options.windowDays ?? EQUITY_CURVE_WINDOW_DAYS;
   const { startKey, endKey } = equityCurveWindow(now, windowDays);
   const liveEquity =
     options.liveEquity != null && Number.isFinite(options.liveEquity)
       ? options.liveEquity
       : null;
-  const deskStartKey = deskStartEtDateKey(
+  const fundedIso =
+    options.deskFundedIso !== undefined
+      ? options.deskFundedIso
+      : process.env.DESK_FUNDED_ISO;
+  const startIso =
     options.deskStartIso !== undefined
       ? options.deskStartIso
-      : process.env.DESK_START_ISO,
-  );
+      : process.env.DESK_START_ISO;
+  const deskStartKey = deskFundedEtDateKey(fundedIso, startIso);
 
   const byDay = new Map<string, number>();
   for (const point of brokerPoints) {
@@ -217,9 +236,9 @@ export function shapeEquityCurvePoints(
   const equityStartKey = deskStartKey ?? firstFundedKey ?? endKey;
 
   let lastKnown: number | null = null;
-  if (firstFundedKey != null && firstFundedKey < startKey) {
+  if (firstFundedKey != null && firstFundedKey < equityStartKey) {
     for (const key of dayKeys) {
-      if (key > startKey) {
+      if (key >= equityStartKey) {
         break;
       }
       const value = byDay.get(key);

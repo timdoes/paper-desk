@@ -1,4 +1,4 @@
-import { DESK_LENGTH_DAYS } from "@/lib/constants";
+import { EQUITY_CURVE_WINDOW_DAYS } from "@/lib/constants";
 
 export function parseBrokerNumber(
   value: string | number | null | undefined,
@@ -127,7 +127,7 @@ export function brokerSessionDateKey(t: number): string {
 
 export function equityCurveWindow(
   now = Date.now(),
-  windowDays = DESK_LENGTH_DAYS,
+  windowDays = EQUITY_CURVE_WINDOW_DAYS,
 ): {
   startKey: string;
   endKey: string;

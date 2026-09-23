@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import { PAPER_DISCLAIMER } from "./constants";
+import {
+  DESK_LENGTH_DAYS,
+  EQUITY_CURVE_WINDOW_DAYS,
+  PAPER_DISCLAIMER,
+} from "./constants";
 
 const bannerSource = readFileSync(
   new URL("../components/desk/disclaimer-banner.tsx", import.meta.url),
@@ -9,6 +13,22 @@ const bannerSource = readFileSync(
 );
 const layoutSource = readFileSync(
   new URL("../app/layout.tsx", import.meta.url),
+  "utf8",
+);
+const headerSource = readFileSync(
+  new URL("../components/desk/desk-header.tsx", import.meta.url),
+  "utf8",
+);
+const setupSource = readFileSync(
+  new URL("../components/desk/setup-desk.tsx", import.meta.url),
+  "utf8",
+);
+const feedSource = readFileSync(
+  new URL("../components/desk/desk-feed.tsx", import.meta.url),
+  "utf8",
+);
+const equitySource = readFileSync(
+  new URL("../components/desk/equity-curve.tsx", import.meta.url),
   "utf8",
 );
 
@@ -36,6 +56,29 @@ describe("paper disclaimer", () => {
     assert.ok(classNames.length > 0);
     assert.ok(!classNames.includes("sticky"));
     assert.ok(!classNames.includes("fixed"));
+  });
+});
+
+describe("mandate clock", () => {
+  it("is 28 calendar days; the equity-curve window stays 30", () => {
+    assert.equal(DESK_LENGTH_DAYS, 28);
+    assert.equal(EQUITY_CURVE_WINDOW_DAYS, 30);
+  });
+
+  it("describes the mandate as 28-day in chrome and metadata", () => {
+    assert.match(layoutSource, /DESK_LENGTH_DAYS/);
+    assert.doesNotMatch(layoutSource, /30-day/);
+    assert.match(headerSource, /DESK_LENGTH_DAYS/);
+    assert.doesNotMatch(headerSource, /30-day/);
+    assert.match(setupSource, /DESK_LENGTH_DAYS/);
+    assert.doesNotMatch(setupSource, /30-day/);
+    assert.match(feedSource, /DESK_LENGTH_DAYS/);
+    assert.doesNotMatch(feedSource, /30-day/);
+  });
+
+  it("keeps the rolling equity-curve window independent of the mandate", () => {
+    assert.match(equitySource, /EQUITY_CURVE_WINDOW_DAYS/);
+    assert.doesNotMatch(equitySource, /DESK_LENGTH_DAYS/);
   });
 });
 

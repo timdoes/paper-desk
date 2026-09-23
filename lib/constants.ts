@@ -2,9 +2,12 @@ export const PAPER_API_BASE = "https://paper-api.alpaca.markets";
 export const LIVE_ALPACA_HOST = "api.alpaca.markets";
 export const PAPER_ALPACA_HOST = "paper-api.alpaca.markets";
 
-/** ROI baseline for the 30-day test — not invented cash. */
+/** ROI baseline for the 28-day (4-week) mandate — not invented cash. */
 export const TEST_STAKE_USD = 10_000;
-export const DESK_LENGTH_DAYS = 30;
+/** Mandate length: exactly four weeks, Sunday-anchored. */
+export const DESK_LENGTH_DAYS = 28;
+/** Rolling ET equity-curve window ending today. Independent of the mandate clock. */
+export const EQUITY_CURVE_WINDOW_DAYS = 30;
 export const MAX_NAME_NAV_PCT = 0.1;
 export const DAILY_LOSS_BREAKER_PCT = 0.03;
 

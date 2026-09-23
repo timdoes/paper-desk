@@ -1,6 +1,6 @@
 # BotMarket
 
-Premium paper-trading dashboard for **TimDOES**. Monitor a **$10,000 Alpaca Paper** book during a **30-day maximize-ROI** test.
+Premium paper-trading dashboard for **TimDOES**. Monitor a **$10,000 Alpaca Paper** book during a **28-day (4-week) maximize-ROI** test.
 
 The app name is **BotMarket**. It is paper-only. It will not call `https://api.alpaca.markets`.
 
@@ -44,7 +44,8 @@ cp .env.example .env.local
 | `ALPACA_API_KEY` | yes, to leave setup desk | Paper key id |
 | `ALPACA_API_SECRET` | yes, to leave setup desk | Paper secret |
 | `ALPACA_PAPER` | yes, must be `true` | Paper-only hard flag |
-| `DESK_START_ISO` | no | ISO-8601 start of the 30-day countdown |
+| `DESK_START_ISO` | no | ISO-8601 start of the 28-day (4-week) mandate. This cohort: `2026-09-20T00:00:00-04:00` (Sunday ET). Clock ends start + 28 days → `2026-10-18T00:00:00-04:00`. |
+| `DESK_FUNDED_ISO` | no | First-funded timestamp for the equity-curve $0 lead-in. Use when funded and mandate Sunday differ. This book: `2026-09-19T01:19:00-04:00`. Falls back to `DESK_START_ISO`, then the first funded broker bar. |
 | `DESK_FEED_TOKEN` | no | Shared secret so desk bots can `POST /api/desk-feed`. All posts are rejected when unset. |
 | `BLOB_READ_WRITE_TOKEN` | no | Vercel Blob token. When set, live feed posts persist as JSON. Seed is used when Blob is empty or missing. |
 
@@ -77,7 +78,7 @@ npm test
 
 1. Import `timdoes/paper-desk`
 2. Set `ALPACA_API_KEY`, `ALPACA_API_SECRET`, `ALPACA_PAPER=true`
-3. Optionally set `DESK_START_ISO`
+3. Optionally set `DESK_START_ISO` (mandate) and `DESK_FUNDED_ISO` (equity-curve lead-in)
 4. For live Grok Bot posts: set `DESK_FEED_TOKEN`, add a Blob store so `BLOB_READ_WRITE_TOKEN` is present
 5. Deploy. Framework preset: Next.js
 
@@ -87,7 +88,7 @@ Do not add a live Alpaca base URL. The app will refuse to start if it sees `api.
 
 | Method | Path | Missing keys | With Paper keys |
 | --- | --- | --- | --- |
-| GET | `/api/account` | `{ configured: false }` | Equity, cash, buying power, ROI vs $10k, risk, 30-day clock |
+| GET | `/api/account` | `{ configured: false }` | Equity, cash, buying power, ROI vs $10k, risk, 28-day clock |
 | GET | `/api/positions` | `{ configured: false }` | Open positions |
 | GET | `/api/orders` | `{ configured: false }` | Recent orders / fills |
 | GET | `/api/portfolio/history` | `{ configured: false }` | 30-day ET equity curve (Alpaca history + live equity when history lags) |

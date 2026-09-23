@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { DESK_NAME, DESK_OWNER } from "@/lib/constants";
+import { DisclaimerBanner } from "@/components/desk/disclaimer-banner";
+import { DESK_NAME, DESK_OWNER, PAPER_DISCLAIMER } from "@/lib/constants";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,7 +14,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const description = `${DESK_OWNER} · $10,000 / 30-day Alpaca Paper maximize-ROI desk. Paper trading only.`;
+const description = `${DESK_OWNER} · $10,000 / 30-day Alpaca Paper maximize-ROI desk. ${PAPER_DISCLAIMER}`;
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://botmarket.timdoes.com"),
@@ -46,6 +47,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-background font-sans text-foreground">
+        <DisclaimerBanner />
         {children}
       </body>
     </html>

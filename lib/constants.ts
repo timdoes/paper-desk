@@ -10,3 +10,7 @@ export const DAILY_LOSS_BREAKER_PCT = 0.03;
 
 export const DESK_OWNER = "TimDOES";
 export const DESK_NAME = "BotMarket";
+
+/** Persistent public-site copy. Always visible — not dismissible. */
+export const PAPER_DISCLAIMER =
+  "Alpaca Paper only. Simulated. No real money. Not investment advice. Not a solicitation. Do not copy these tickets. Past paper results do not predict live results. Personal TimDOES experiment — not an RIA or broker-dealer.";

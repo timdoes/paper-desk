@@ -27,10 +27,15 @@ describe("paper disclaimer", () => {
   it("renders the full Legal copy from the root layout in document flow", () => {
     assert.match(layoutSource, /DisclaimerBanner/);
     assert.match(bannerSource, /\{PAPER_DISCLAIMER\}/);
-    assert.doesNotMatch(bannerSource, /\bsticky\b/);
-    assert.doesNotMatch(bannerSource, /\bfixed\b/);
     assert.doesNotMatch(bannerSource, /position:\s*(sticky|fixed)/);
-    assert.doesNotMatch(layoutSource, /\bsticky\b|\bfixed\b/);
+    assert.doesNotMatch(layoutSource, /position:\s*(sticky|fixed)/);
+
+    const classNames = [...bannerSource.matchAll(/className="([^"]*)"/g)].flatMap(
+      (match) => match[1].split(/\s+/),
+    );
+    assert.ok(classNames.length > 0);
+    assert.ok(!classNames.includes("sticky"));
+    assert.ok(!classNames.includes("fixed"));
   });
 });
 

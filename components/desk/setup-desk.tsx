@@ -6,7 +6,12 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { DESK_NAME, DESK_OWNER, TEST_STAKE_USD } from "@/lib/constants";
+import {
+  DESK_LENGTH_DAYS,
+  DESK_NAME,
+  DESK_OWNER,
+  TEST_STAKE_USD,
+} from "@/lib/constants";
 import { DeskBackdrop } from "@/components/desk/desk-backdrop";
 import { GlassBody, GlassHeader, GlassPanel } from "@/components/desk/glass-panel";
 
@@ -19,7 +24,7 @@ const steps = [
   {
     icon: KeyRound,
     title: "Set the three required env vars",
-    body: "ALPACA_API_KEY, ALPACA_API_SECRET, and ALPACA_PAPER=true. Optional: DESK_START_ISO for the 30-day clock.",
+    body: `ALPACA_API_KEY, ALPACA_API_SECRET, and ALPACA_PAPER=true. Optional: DESK_START_ISO for the ${DESK_LENGTH_DAYS}-day clock; DESK_FUNDED_ISO if first-funded differs from mandate start.`,
   },
   {
     icon: ShieldCheck,
@@ -105,7 +110,8 @@ export function SetupDesk() {
                   {`ALPACA_API_KEY=
 ALPACA_API_SECRET=
 ALPACA_PAPER=true
-DESK_START_ISO=`}
+DESK_START_ISO=
+DESK_FUNDED_ISO=`}
                 </pre>
               </div>
               <div className="space-y-3 text-sm text-white/55">

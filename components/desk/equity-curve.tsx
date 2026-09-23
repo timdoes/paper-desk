@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { DESK_NAME } from "@/lib/constants";
+import { DESK_NAME, EQUITY_CURVE_WINDOW_DAYS } from "@/lib/constants";
 import {
   equityCurveWindow,
   formatEquityCurveDate,
@@ -30,7 +30,7 @@ export function EquityCurve({ points }: { points: HistoryPoint[] }) {
     <GlassPanel className="h-full">
       <GlassHeader
         title="Equity curve"
-        description="30-day window · dates in Eastern Time · $0 until desk start · latest point is live equity when Alpaca history lags."
+        description={`${EQUITY_CURVE_WINDOW_DAYS}-day window · dates in Eastern Time · $0 until first funded · latest point is live equity when Alpaca history lags.`}
       />
       <GlassBody className="h-[320px]">
         {data.length === 0 || axis == null ? (

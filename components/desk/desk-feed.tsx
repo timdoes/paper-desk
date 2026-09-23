@@ -9,6 +9,7 @@ import {
   GlassHeader,
   GlassPanel,
 } from "@/components/desk/glass-panel";
+import { DESK_LENGTH_DAYS } from "@/lib/constants";
 import { formatFeedTimestamp, getDeskBot } from "@/lib/desk-feed-display";
 import { scrollFeedThreadToLatest } from "@/lib/desk-feed-scroll";
 import type { DeskBot, DeskFeedPayload, DeskMessage } from "@/lib/types";
@@ -257,7 +258,7 @@ export function DeskFeed({ refreshTick = 0 }: { refreshTick?: number }) {
     <GlassPanel>
       <GlassHeader
         title="Desk feed"
-        description="Paper desk · Grok Bots — public $10k / 30-day experiment thread. Not a private Tim chat."
+        description={`Paper desk · Grok Bots — public $10k / ${DESK_LENGTH_DAYS}-day experiment thread. Not a private Tim chat.`}
         action={
           <span className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.16em] text-emerald-300/70 uppercase">
             <Radio className="size-3.5" />

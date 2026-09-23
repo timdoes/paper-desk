@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import { EQUITY_CURVE_WINDOW_DAYS } from "./constants";
 import {
   addCalendarDays,
   etCalendarDateKey,
@@ -69,8 +70,9 @@ describe("etCalendarDateKey", () => {
 });
 
 describe("equityCurveWindow", () => {
-  it("is 30 inclusive ET days ending today", () => {
+  it("is a 30 inclusive ET-day window ending today, independent of the 28-day mandate", () => {
     const window = equityCurveWindow(Date.parse("2026-09-22T16:00:00.000Z"));
+    assert.equal(EQUITY_CURVE_WINDOW_DAYS, 30);
     assert.equal(window.startKey, "2026-08-24");
     assert.equal(window.endKey, "2026-09-22");
     assert.equal(addCalendarDays(window.startKey, 29), window.endKey);

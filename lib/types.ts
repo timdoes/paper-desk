@@ -141,7 +141,6 @@ export type RiskDecision =
     };
 
 export type AccountView = {
-  id: string | null;
   status: string | null;
   currency: string;
   cash: number | null;

@@ -103,7 +103,6 @@ export function toAccountView(account: AlpacaAccount): AccountView {
   const roiVsStakePct = equity == null ? null : roiVsStake! / TEST_STAKE_USD;
 
   return {
-    id: account.id ?? account.account_number ?? null,
     status: account.status ?? null,
     currency: account.currency ?? "USD",
     cash: parseBrokerNumber(account.cash),

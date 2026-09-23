@@ -3,6 +3,10 @@ import { PaperDesk } from "@/components/desk/paper-desk";
 import { PaperGuardDesk } from "@/components/desk/paper-guard-desk";
 import { SetupDesk } from "@/components/desk/setup-desk";
 import { AlpacaRequestError } from "@/lib/alpaca";
+import {
+  alpacaClientErrorMessage,
+  logAlpacaRequestError,
+} from "@/lib/http";
 import { PaperGuardError } from "@/lib/paper-guard";
 import { loadDeskSnapshot } from "@/lib/snapshot";
 import type { DeskSnapshot, UnconfiguredPayload } from "@/lib/types";
@@ -28,9 +32,10 @@ async function resolvePageState(): Promise<PageState> {
       return { kind: "guard", message: error.message };
     }
     if (error instanceof AlpacaRequestError) {
+      logAlpacaRequestError(error);
       return {
         kind: "broker",
-        message: `Alpaca Paper returned ${error.status}. ${error.detail}`,
+        message: alpacaClientErrorMessage(error.status),
       };
     }
     throw error;

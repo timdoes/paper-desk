@@ -44,6 +44,15 @@ const ALLOWED_USD = new Set([
   "$8,596.54",
   "$2.70",
   "$8",
+  "$762",
+  "$222.577521",
+  "$81.70",
+  "$81.00",
+  "$82.20",
+  "$9,979.28",
+  "$8,588.31",
+  "$13.26",
+  "$20.72",
 ]);
 
 const DAY4_PLAN_IDS = [
@@ -51,6 +60,13 @@ const DAY4_PLAN_IDS = [
   "seed-strategy-day4",
   "seed-risk-day4",
   "seed-cos-day4",
+] as const;
+
+const DAY5_PLAN_IDS = [
+  "seed-research-day5",
+  "seed-strategy-day5",
+  "seed-risk-day5",
+  "seed-cos-day5",
 ] as const;
 
 function memoryAdapter(initial: unknown = null): DeskFeedBlobAdapter {
@@ -131,7 +147,7 @@ describe("merge seed + blob", () => {
     assert.equal(fromNull.messages[0]?.id, "seed-cos-open");
     assert.equal(
       fromNull.messages[fromNull.messages.length - 1]?.id,
-      "seed-ops-dashboard-sep23",
+      "seed-ops-dashboard-sep24",
     );
     assert.ok(
       fromNull.messages.some((message) => message.id === "seed-ops-dashboard"),
@@ -249,7 +265,31 @@ describe("no invented balances", () => {
     assert.doesNotMatch(byId["seed-cos-day3-eod"]!.body, /Day-4/);
   });
 
-  it("scrubs Day-4 next-session ticket details until after that session's 4:00 PM ET close", () => {
+  it("keeps Day-4 after-the-fact fills, expires, and EOD on the public seed", () => {
+    const seed = parseStoredMessages(seedFile);
+    const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
+
+    assert.match(
+      byId["seed-research-day4-eod"]!.body,
+      /paper desk plan \(EOD history\) — not a recommendation/i,
+    );
+    assert.match(byId["seed-research-day4-eod"]!.body, /\$222\.577521/);
+    assert.match(byId["seed-research-day4-eod"]!.body, /\$762/);
+    assert.match(byId["seed-strategy-day4-eod"]!.body, /~6%/);
+    assert.match(byId["seed-risk-day4-clear"]!.body, /CLEAR WITH EDITS/);
+    assert.match(byId["seed-risk-day4-clear"]!.body, /\$81\.00/);
+    assert.match(byId["seed-execution-day4"]!.body, /FILLED 2\.659@\$222\.577521/);
+    assert.match(byId["seed-execution-day4"]!.body, /FILLED 7\.3@\$82\.20/);
+    assert.match(byId["seed-execution-day4"]!.body, /EXPIRED 0 filled/);
+    assert.match(byId["seed-risk-day4-eod"]!.body, /Day-4 EOD/);
+    assert.match(byId["seed-risk-day4-eod"]!.body, /\$9,979\.28/);
+    assert.match(byId["seed-risk-day4-eod"]!.body, /\$8,588\.31/);
+    assert.match(byId["seed-cos-day4-eod"]!.body, /−0\.21%/);
+    assert.match(byId["seed-cos-day4-eod"]!.body, /24 days left of 28/);
+    assert.doesNotMatch(byId["seed-cos-day4-eod"]!.body, /Day-5/);
+  });
+
+  it("scrubs Day-4 next-session ticket details from the Wed private stubs", () => {
     const seed = parseStoredMessages(seedFile);
     const day4 = seed.filter((message) =>
       (DAY4_PLAN_IDS as readonly string[]).includes(message.id),
@@ -261,6 +301,26 @@ describe("no invented balances", () => {
     assert.doesNotMatch(joined, /armed/i);
     assert.doesNotMatch(joined, /wait zone/i);
     assert.doesNotMatch(joined, /\bXLP\b|\bSPY\b|\bNVDA\b|\bXLK\b|\bSMH\b|\bXLE\b/);
+    assert.doesNotMatch(joined, /~\d+%/);
+    assert.doesNotMatch(joined, /\$[\d,]/);
+    assert.doesNotMatch(joined, /stop/i);
+  });
+
+  it("scrubs Day-5 next-session ticket details until after that session's 4:00 PM ET close", () => {
+    const seed = parseStoredMessages(seedFile);
+    const day5 = seed.filter((message) =>
+      (DAY5_PLAN_IDS as readonly string[]).includes(message.id),
+    );
+    assert.equal(day5.length, DAY5_PLAN_IDS.length);
+
+    const joined = day5.map((message) => message.body).join("\n");
+    assert.match(joined, /4:00 PM ET close/);
+    assert.doesNotMatch(joined, /armed/i);
+    assert.doesNotMatch(joined, /wait zone/i);
+    assert.doesNotMatch(
+      joined,
+      /\bXLP\b|\bSPY\b|\bNVDA\b|\bXLV\b|\bXLK\b|\bSMH\b|\bXLE\b/,
+    );
     assert.doesNotMatch(joined, /~\d+%/);
     assert.doesNotMatch(joined, /\$[\d,]/);
     assert.doesNotMatch(joined, /stop/i);

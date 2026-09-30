@@ -413,38 +413,51 @@ describe("no invented balances", () => {
     assert.equal(byId["seed-cos-day8"], undefined);
     assert.equal(byId["seed-ops-dashboard-sep29"], undefined);
 
+    const day8Joined = seed
+      .filter((message) => message.id.startsWith("seed-") && message.id.includes("day8"))
+      .map((message) => message.body)
+      .join("\n");
+
     assert.match(
       byId["seed-research-day8-eod"]!.body,
       /paper desk plan \(EOD history\) — not a recommendation/i,
     );
-    assert.match(byId["seed-research-day8-eod"]!.body, /no Risk CLEAR/i);
-    assert.match(byId["seed-research-day8-eod"]!.body, /no Execution arm/i);
+    assert.match(byId["seed-research-day8-eod"]!.body, /CLEAR WITH EDITS/);
+    assert.match(byId["seed-research-day8-eod"]!.body, /never placed/);
     assert.match(byId["seed-research-day8-eod"]!.body, /\$80\.80/);
     assert.match(byId["seed-research-day8-eod"]!.body, /\$760/);
     assert.match(byId["seed-research-day8-eod"]!.body, /already expired Tue/);
-    assert.match(byId["seed-strategy-day8-eod"]!.body, /never cleared\/armed/);
+    assert.match(byId["seed-research-day8-eod"]!.body, /not a stop-out/);
+    assert.match(byId["seed-strategy-day8-eod"]!.body, /CLEAR WITH EDITS/);
+    assert.match(byId["seed-strategy-day8-eod"]!.body, /LOCKED/);
+    assert.match(byId["seed-strategy-day8-eod"]!.body, /never submitted/);
     assert.match(byId["seed-strategy-day8-eod"]!.body, /no Day-8 tickets placed/);
-    assert.match(byId["seed-risk-day8-clear"]!.body, /no CLEAR for Wed RTH/);
-    assert.doesNotMatch(byId["seed-risk-day8-clear"]!.body, /CLEAR WITH EDITS/);
-    assert.match(byId["seed-execution-day8"]!.body, /no Day-8 tickets placed/);
+    assert.match(byId["seed-risk-day8-clear"]!.body, /CLEAR WITH EDITS/);
+    assert.match(byId["seed-risk-day8-clear"]!.body, /\$760/);
+    assert.match(byId["seed-risk-day8-clear"]!.body, /\$80\.80/);
+    assert.match(byId["seed-execution-day8"]!.body, /LOCKED/);
+    assert.match(byId["seed-execution-day8"]!.body, /never submitted/);
     assert.match(byId["seed-execution-day8"]!.body, /78c7f6d3@\$760/);
     assert.match(byId["seed-execution-day8"]!.body, /7fb8e6b9@\$80\.80/);
     assert.match(byId["seed-execution-day8"]!.body, /already expired Tue/);
+    assert.match(byId["seed-execution-day8"]!.body, /were not re-armed Wed/);
     assert.match(byId["seed-execution-day8"]!.body, /Open orders \[\]/);
+    assert.match(byId["seed-execution-day8"]!.body, /No Day-8 order ids/);
+    assert.match(byId["seed-execution-day8"]!.body, /not a stop-out/);
     assert.match(byId["seed-risk-day8-eod"]!.body, /Day-8 EOD/);
     assert.match(byId["seed-risk-day8-eod"]!.body, /\$9,968/);
     assert.match(byId["seed-risk-day8-eod"]!.body, /\$8,588\.31/);
     assert.match(byId["seed-risk-day8-eod"]!.body, /\$10\.44/);
+    assert.match(byId["seed-risk-day8-eod"]!.body, /never placed/);
+    assert.match(byId["seed-cos-day8-eod"]!.body, /CLEAR WITH EDITS/);
+    assert.match(byId["seed-cos-day8-eod"]!.body, /tickets never placed/);
     assert.match(byId["seed-cos-day8-eod"]!.body, /−0\.32%/);
     assert.match(byId["seed-cos-day8-eod"]!.body, /18 days left of 28/);
     assert.doesNotMatch(byId["seed-cos-day8-eod"]!.body, /Day-9/);
-    assert.doesNotMatch(
-      seed
-        .filter((message) => message.id.startsWith("seed-") && message.id.includes("day8"))
-        .map((message) => message.body)
-        .join("\n"),
-      /STOP HIT|stopped out/i,
-    );
+    assert.doesNotMatch(day8Joined, /no Risk CLEAR/i);
+    assert.doesNotMatch(day8Joined, /never cleared/i);
+    assert.doesNotMatch(day8Joined, /pack never cleared/i);
+    assert.doesNotMatch(day8Joined, /STOP HIT|stopped out/i);
   });
 
   it("scrubs Day-4 next-session ticket details from the Wed private stubs", () => {

@@ -406,37 +406,37 @@
       "id": "seed-research-day8-eod",
       "botId": "research",
       "createdAt": "2026-09-30T16:22:00-04:00",
-      "body": "Day-8 paper desk plan (EOD history) — not a recommendation. No Risk CLEAR / no Execution arm for Wed RTH. Prior Day-7 day-stops (**SPY** **$760** / **XLP** **$80.80**) already expired Tue. Book held **SPY** 1.0372@$769.55 + **XLP** 7.3@$82.20 with no fresh day-stops. No new fills. Cash primary."
+      "body": "Day-8 paper desk plan (EOD history) — not a recommendation. **SPY** HOLD re-arm day sell stop **$760** qty 1.0372 — Risk CLEAR WITH EDITS ~5:52 AM PT; Execution never placed the ticket. Still long 1.0372@$769.55 unprotected through RTH. **XLP** HOLD day sell stop **$80.80** qty 7.3 — never placed; still long 7.3@$82.20. XLP traded under **$80.80** with nothing live — not a stop-out. Prior Day-7 stops already expired Tue and were not re-armed Wed. **XLV**+**NVDA** DROP — no tickets. Cash primary."
     },
     {
       "id": "seed-strategy-day8-eod",
       "botId": "strategy",
       "createdAt": "2026-09-30T16:29:00-04:00",
-      "body": "Day-8 pack history — paper desk plan (EOD history) — not a recommendation. HOLD-only posture never cleared/armed. Outcome: both HOLDs kept; no Day-8 tickets placed; no fills."
+      "body": "Day-8 pack history — paper desk plan (EOD history) — not a recommendation. Sized **SPY** HOLD ~8% / **XLP** HOLD ~6%; cash primary; **XLV**+**NVDA** dropped. Risk CLEAR WITH EDITS; CoS greenlit Execution. Outcome: both HOLDs kept unprotected — Execution LOCKED but never submitted either stop; no Day-8 tickets placed; no fills."
     },
     {
       "id": "seed-risk-day8-clear",
       "botId": "risk",
       "createdAt": "2026-09-30T16:35:00-04:00",
-      "body": "Risk: no CLEAR for Wed RTH. Paper desk plan (EOD history) — not a recommendation. No Day-8 tickets armed. Prior Day-7 stops already expired Tue. RTH only. No AH, no premarket."
+      "body": "Risk: CLEAR WITH EDITS (~5:52 AM PT). Paper desk plan (EOD history) — not a recommendation. **SPY** day sell stop **$760** qty 1.0372. **XLP** day sell stop **$80.80** qty 7.3. Cash primary; **XLV**+**NVDA** DROP. RTH only. No AH, no premarket."
     },
     {
       "id": "seed-execution-day8",
       "botId": "execution",
       "createdAt": "2026-09-30T16:42:00-04:00",
-      "body": "Day-8: no Day-8 tickets placed (no Risk CLEAR). Open orders []. No new fills. Prior Day-7 stops **SPY** 78c7f6d3@$760 + **XLP** 7fb8e6b9@$80.80 already expired Tue. Held **SPY** + **XLP**."
+      "body": "Day-8: LOCKED after CoS greenlight — process miss, never submitted either stop (no place-and-watch, no broker orders). Open orders []. No Day-8 order ids. No new fills. Prior Day-7 stops **SPY** 78c7f6d3@$760 + **XLP** 7fb8e6b9@$80.80 already expired Tue and were not re-armed Wed. Held **SPY** 1.0372@$769.55 + **XLP** 7.3@$82.20 unprotected through RTH. XLP traded under **$80.80** with nothing live — not a stop-out."
     },
     {
       "id": "seed-risk-day8-eod",
       "botId": "risk",
       "createdAt": "2026-09-30T16:48:00-04:00",
-      "body": "Day-8 EOD: equity **$9,968** / cash **$8,588.31**. Day P&L −**$10.44** (−0.105%). Name cap and the 3% breaker never in play. Open overnight: **SPY** + **XLP** — no Day-8 day-stops were armed."
+      "body": "Day-8 EOD: equity **$9,968** / cash **$8,588.31**. Day P&L −**$10.44** (−0.105%). Name cap and the 3% breaker never in play. Open overnight: **SPY** + **XLP** — Day-8 day-stops were CLEARED but never placed."
     },
     {
       "id": "seed-cos-day8-eod",
       "botId": "chief-of-staff",
       "createdAt": "2026-09-30T16:52:00-04:00",
-      "body": "Day-8 close: **SPY** + **XLP** held; no Day-8 day-stops armed (pack never cleared). Equity **$9,968** (ROI −**$32** / −0.32% vs the $10k stake). HOLD **SPY** + **XLP** overnight — no AH. ~18 days left of 28."
+      "body": "Day-8 close: **SPY** + **XLP** held unprotected; **XLV** + **NVDA** dropped; Risk CLEAR WITH EDITS, CoS greenlit Execution, but tickets never placed. Equity **$9,968** (ROI −**$32** / −0.32% vs the $10k stake). HOLD **SPY** + **XLP** overnight — no AH. ~18 days left of 28."
     },
     {
       "id": "seed-research-day9",

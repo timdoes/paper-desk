@@ -79,6 +79,8 @@ const ALLOWED_USD = new Set([
   "$9,964.01",
   "$3.68",
   "$35.99",
+  "$9,963.97",
+  "$36.03",
 ]);
 
 const DAY4_PLAN_IDS = [
@@ -109,11 +111,11 @@ const DAY7_PLAN_IDS = [
   "seed-cos-day7",
 ] as const;
 
-const DAY10_PLAN_IDS = [
-  "seed-research-day10",
-  "seed-strategy-day10",
-  "seed-risk-day10",
-  "seed-cos-day10",
+const DAY11_PLAN_IDS = [
+  "seed-research-day11",
+  "seed-strategy-day11",
+  "seed-risk-day11",
+  "seed-cos-day11",
 ] as const;
 
 function memoryAdapter(initial: unknown = null): DeskFeedBlobAdapter {
@@ -194,7 +196,7 @@ describe("merge seed + blob", () => {
     assert.equal(fromNull.messages[0]?.id, "seed-cos-open");
     assert.equal(
       fromNull.messages[fromNull.messages.length - 1]?.id,
-      "seed-ops-dashboard-oct1",
+      "seed-ops-dashboard-oct2",
     );
     assert.ok(
       fromNull.messages.some((message) => message.id === "seed-ops-dashboard"),
@@ -212,7 +214,7 @@ describe("merge seed + blob", () => {
       id: "live-research-1",
       botId: "research",
       body: "Wait zone still NVDA / SPY / XLP. No new marks from me.",
-      createdAt: "2026-10-02T00:05:00.000Z",
+      createdAt: "2026-10-03T00:05:00.000Z",
     };
     const edited: DeskMessage = {
       ...seed[0]!,
@@ -234,7 +236,7 @@ describe("merge seed + blob", () => {
       {
         botId: "execution",
         body: "Still flat. No new paper fills to report.",
-        createdAt: "2026-10-02T00:30:00.000Z",
+        createdAt: "2026-10-03T00:30:00.000Z",
       },
       { adapter },
     );
@@ -510,6 +512,48 @@ describe("no invented balances", () => {
     assert.doesNotMatch(byId["seed-cos-day9-eod"]!.body, /Day-10/);
   });
 
+  it("keeps Day-10 after-the-fact fills, expires, and EOD on the public seed", () => {
+    const seed = parseStoredMessages(seedFile);
+    const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
+
+    assert.equal(byId["seed-research-day10"], undefined);
+    assert.equal(byId["seed-strategy-day10"], undefined);
+    assert.equal(byId["seed-risk-day10"], undefined);
+    assert.equal(byId["seed-cos-day10"], undefined);
+    assert.ok(byId["seed-ops-dashboard-oct1"]);
+
+    assert.match(
+      byId["seed-research-day10-eod"]!.body,
+      /paper desk plan \(EOD history\) — not a recommendation/i,
+    );
+    assert.match(byId["seed-research-day10-eod"]!.body, /DROP\/SKIP/);
+    assert.match(byId["seed-research-day10-eod"]!.body, /Execution IDLE/);
+    assert.match(byId["seed-research-day10-eod"]!.body, /No fills/);
+    assert.match(byId["seed-research-day10-eod"]!.body, /none placed/);
+    assert.match(byId["seed-strategy-day10-eod"]!.body, /0% new risk/);
+    assert.match(byId["seed-strategy-day10-eod"]!.body, /CLEAR WITH EDITS/);
+    assert.match(byId["seed-strategy-day10-eod"]!.body, /no tickets placed/);
+    assert.match(byId["seed-strategy-day10-eod"]!.body, /FLAT cash/);
+    assert.match(byId["seed-risk-day10-clear"]!.body, /CLEAR WITH EDITS/);
+    assert.match(byId["seed-risk-day10-clear"]!.body, /NFP Friday path/);
+    assert.match(byId["seed-risk-day10-clear"]!.body, /do not arm/);
+    assert.match(byId["seed-execution-day10"]!.body, /IDLE all RTH/);
+    assert.match(byId["seed-execution-day10"]!.body, /no orders submitted/);
+    assert.match(byId["seed-execution-day10"]!.body, /Open orders \[\]/);
+    assert.match(byId["seed-execution-day10"]!.body, /No Day-10 order ids/);
+    assert.match(byId["seed-execution-day10"]!.body, /positions \[\]/);
+    assert.match(byId["seed-risk-day10-eod"]!.body, /Day-10 EOD/);
+    assert.match(byId["seed-risk-day10-eod"]!.body, /\$9,963\.97/);
+    assert.match(byId["seed-risk-day10-eod"]!.body, /Day P&L \*\*\$0\*\*/);
+    assert.match(byId["seed-risk-day10-eod"]!.body, /FLAT cash-only/);
+    assert.match(byId["seed-cos-day10-eod"]!.body, /\$9,963\.97/);
+    assert.match(byId["seed-cos-day10-eod"]!.body, /\$36\.03/);
+    assert.match(byId["seed-cos-day10-eod"]!.body, /−0\.36%/);
+    assert.match(byId["seed-cos-day10-eod"]!.body, /16 days left of 28/);
+    assert.doesNotMatch(byId["seed-cos-day10-eod"]!.body, /Day-11/);
+    assert.doesNotMatch(byId["seed-execution-day10"]!.body, /49cb854e|2d20c472/);
+  });
+
   it("scrubs Day-4 next-session ticket details from the Wed private stubs", () => {
     const seed = parseStoredMessages(seedFile);
     const day4 = seed.filter((message) =>
@@ -587,14 +631,14 @@ describe("no invented balances", () => {
     assert.doesNotMatch(joined, /stop/i);
   });
 
-  it("scrubs Day-10 next-session ticket details until after that session's 4:00 PM ET close", () => {
+  it("scrubs Day-11 next-session ticket details until after that session's 4:00 PM ET close", () => {
     const seed = parseStoredMessages(seedFile);
-    const day10 = seed.filter((message) =>
-      (DAY10_PLAN_IDS as readonly string[]).includes(message.id),
+    const day11 = seed.filter((message) =>
+      (DAY11_PLAN_IDS as readonly string[]).includes(message.id),
     );
-    assert.equal(day10.length, DAY10_PLAN_IDS.length);
+    assert.equal(day11.length, DAY11_PLAN_IDS.length);
 
-    const joined = day10.map((message) => message.body).join("\n");
+    const joined = day11.map((message) => message.body).join("\n");
     assert.match(joined, /4:00 PM ET close/);
     assert.doesNotMatch(joined, /armed/i);
     assert.doesNotMatch(joined, /wait zone/i);

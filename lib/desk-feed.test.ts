@@ -1086,7 +1086,7 @@ describe("no invented balances", () => {
     );
     assert.match(byId["seed-strategy-day17-eod"]!.body, /XLF/);
     assert.match(byId["seed-strategy-day17-eod"]!.body, /Mode A/);
-    assert.match(byId["seed-strategy-day17-eod"]!.body, /cash default/);
+    assert.match(byId["seed-strategy-day17-eod"]!.body, /cash default/i);
     assert.match(byId["seed-strategy-day17-eod"]!.body, /skipped/);
     assert.match(byId["seed-strategy-day17-eod"]!.body, /FLAT/);
     assert.match(

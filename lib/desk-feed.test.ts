@@ -1188,8 +1188,8 @@ describe("no invented balances", () => {
     assert.match(byId["seed-risk-day18-clear"]!.body, /\$0\.60/);
     assert.match(byId["seed-risk-day18-clear"]!.body, /\$1\.49/);
     assert.match(byId["seed-risk-day18-clear"]!.body, /10:55 AM PT/);
-    assert.match(byId["seed-risk-day18-clear"]!.body, /BAC/);
     assert.match(byId["seed-risk-day18-clear"]!.body, /CPI/);
+    assert.match(byId["seed-risk-day18-clear"]!.body, /BAC/);
     assert.match(byId["seed-risk-day18-clear"]!.body, /no Day-18 order reached the broker/);
     assert.match(byId["seed-risk-day18-clear"]!.body, /rules never tested/);
     assert.match(byId["seed-risk-day18-clear"]!.body, /RTH only/);

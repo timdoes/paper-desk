@@ -994,7 +994,7 @@
       "id": "seed-risk-day18-clear",
       "botId": "risk",
       "createdAt": "2026-10-14T20:35:00.000Z",
-      "body": "Risk: CLEAR WITH EDITS. Paper desk plan (EOD history) — not a recommendation. Mode B breakout vetoed. **SPY** Mode A only — BUY 1.00 share, opening-range anchored: day limit at the opening-range midpoint minus **$0.60**, stop at the opening-range low minus **$1.49**. Skip filters: skip if the opening range was wider than **$3.58**, if **SPY** opened outside **$772–$784**, or if the CPI gap exceeded 1 ATR. Flat by 10:55 AM PT. RTH only. No AH, no premarket. Outcome: no Day-18 order reached the broker — rules never tested by a position."
+      "body": "Risk: CLEAR WITH EDITS. Paper desk plan (EOD history) — not a recommendation. CPI + BAC earnings day. Mode B breakout vetoed. **SPY** Mode A only — BUY 1.00 share, opening-range anchored: day limit at the opening-range midpoint minus **$0.60**, stop at the opening-range low minus **$1.49**. Skip filters: skip if the opening range was wider than **$3.58**, if **SPY** opened outside **$772–$784**, or if the CPI gap exceeded 1 ATR. Flat by 10:55 AM PT. RTH only. No AH, no premarket. Outcome: no Day-18 order reached the broker — rules never tested by a position."
     },
     {
       "id": "seed-execution-day18",

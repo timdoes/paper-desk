@@ -206,7 +206,7 @@ export function EquityCurve({
                     tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
                     axisLine={false}
                     tickLine={false}
-                    width={64}
+                    width={72}
                   />
                   <Tooltip
                     content={<EmptyTooltip />}

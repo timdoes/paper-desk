@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { PAPER_API_BASE } from "@/lib/constants";
 import {
   deskStakeUsd,
@@ -9,10 +10,7 @@ import {
 import { deskRiskState } from "@/lib/risk";
 import type { DeskSnapshot, HistoryPoint } from "@/lib/types";
 
-const TEST_1_EQUITY_CSV = new URL(
-  "../results/test-1-equity.csv",
-  import.meta.url,
-);
+const TEST_1_EQUITY_CSV = join(process.cwd(), "results/test-1-equity.csv");
 
 /** Last archived Test 1 close — used as live equity when Alpaca is not called. */
 const ARCHIVED_LIVE_EQUITY = 9970.33;

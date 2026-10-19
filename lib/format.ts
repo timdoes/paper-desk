@@ -96,11 +96,114 @@ export function formatDeskDay(iso: string | null | undefined): string {
   }).format(date);
 }
 
-const EQUITY_CURVE_TIME_ZONE = "America/New_York";
+export const ET_TIME_ZONE = "America/New_York";
+
+const ISO_CALENDAR_DATE_RE = /^(\d{4})-(\d{2})-(\d{2})/;
+
+export type EtDateFormat = "full" | "short" | "weekday";
+
+const etDateFull = new Intl.DateTimeFormat("en-US", {
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+  timeZone: ET_TIME_ZONE,
+});
+
+const etDateShort = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  timeZone: ET_TIME_ZONE,
+});
+
+const etDateWeekday = new Intl.DateTimeFormat("en-US", {
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+  timeZone: ET_TIME_ZONE,
+});
+
+const etDateYear = new Intl.DateTimeFormat("en-US", {
+  year: "numeric",
+  timeZone: ET_TIME_ZONE,
+});
+
+/**
+ * Calendar date written in an ISO value, as an instant that stays on that
+ * civil day in America/New_York. Date-only strings (`2026-11-15`) are not
+ * parsed as UTC midnight — that rolls back to the previous ET evening.
+ * Full timestamps use the YYYY-MM-DD prefix so a clock end like
+ * `2026-11-15T04:00:00.000Z` (Nov 14 11pm EST after the fall-back) still
+ * labels as Nov 15, matching the UTC date the desk already used.
+ */
+function instantForWrittenIsoDate(
+  iso: string | null | undefined,
+): Date | null {
+  const raw = iso?.trim() ?? "";
+  if (!raw) {
+    return null;
+  }
+  const match = ISO_CALENDAR_DATE_RE.exec(raw);
+  if (!match) {
+    return null;
+  }
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const utc = Date.UTC(year, month - 1, day);
+  const check = new Date(utc);
+  if (
+    check.getUTCFullYear() !== year ||
+    check.getUTCMonth() !== month - 1 ||
+    check.getUTCDate() !== day
+  ) {
+    return null;
+  }
+  return new Date(noonUtcForDateKey(`${match[1]}-${match[2]}-${match[3]}`));
+}
+
+export function formatEtDate(
+  iso: string | null | undefined,
+  format: EtDateFormat = "full",
+): string {
+  const instant = instantForWrittenIsoDate(iso);
+  if (!instant) {
+    return "—";
+  }
+  switch (format) {
+    case "full":
+      return etDateFull.format(instant);
+    case "short":
+      return etDateShort.format(instant);
+    case "weekday":
+      return etDateWeekday.format(instant);
+    default: {
+      const _exhaustive: never = format;
+      return _exhaustive;
+    }
+  }
+}
+
+export function formatEtDateRange(
+  startIso: string | null | undefined,
+  endIso: string | null | undefined,
+): string {
+  const start = instantForWrittenIsoDate(startIso);
+  const end = instantForWrittenIsoDate(endIso);
+  if (!start || !end) {
+    return "—";
+  }
+  const startYear = etDateYear.format(start);
+  const endYear = etDateYear.format(end);
+  if (startYear === endYear) {
+    return `${etDateShort.format(start)} → ${etDateShort.format(end)}, ${endYear} ET`;
+  }
+  return `${etDateShort.format(start)}, ${startYear} → ${etDateShort.format(end)}, ${endYear} ET`;
+}
 
 export function etCalendarDateKey(t: number): string {
   const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: EQUITY_CURVE_TIME_ZONE,
+    timeZone: ET_TIME_ZONE,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -199,7 +302,7 @@ export function formatEquityCurveDate(t: number): string {
   return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
-    timeZone: EQUITY_CURVE_TIME_ZONE,
+    timeZone: ET_TIME_ZONE,
   });
 }
 

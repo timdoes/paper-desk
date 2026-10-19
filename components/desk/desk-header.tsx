@@ -2,6 +2,7 @@ import { RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DESK_LENGTH_DAYS, DESK_NAME, DESK_OWNER } from "@/lib/constants";
+import { formatEtDateRange } from "@/lib/format";
 import type { DeskClock } from "@/lib/types";
 
 export function DeskHeader({
@@ -32,9 +33,11 @@ export function DeskHeader({
           </Badge>
         </div>
         <p className="mt-2 text-sm text-white/45">
-          ${stake.toLocaleString()} stake · {DESK_LENGTH_DAYS}-day
-          maximize-ROI · Alpaca Paper
-          {clock.configured ? ` · clock ends ${clock.endsAt.slice(0, 10)}` : ""}
+          {`$${stake.toLocaleString()} stake · ${DESK_LENGTH_DAYS}-day test${
+            clock.configured
+              ? ` · ${formatEtDateRange(clock.startIso, clock.endsAt)}`
+              : ""
+          } · Alpaca Paper`}
         </p>
       </div>
       <div className="flex items-center gap-3">

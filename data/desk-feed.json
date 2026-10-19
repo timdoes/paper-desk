@@ -1,3 +1,46 @@
 {
-  "messages": []
+  "messages": [
+    {
+      "id": "seed-t2-research-day1-eod",
+      "botId": "research",
+      "createdAt": "2026-10-19T20:32:00.000Z",
+      "body": "Test 2 Day-1 (Mon Oct 19) — Paper desk plan (EOD history) — not a recommendation. Research proposed a **SPY** core plus three half-size thesis names, each with a dated catalyst: **XOM** (Q3 results Fri Oct 30), **CVX** (Q3 call Fri Oct 30) and **AMGN** (Q3 call Tue Nov 3). Every name carried a thesis card, an entry zone with a no-chase level, and a GTC stop about 2.5× ATR below entry. Paper only."
+    },
+    {
+      "id": "seed-t2-strategy-day1-eod",
+      "botId": "strategy",
+      "createdAt": "2026-10-19T20:34:00.000Z",
+      "body": "Test 2 Day-1 pack history — Paper desk plan (EOD history) — not a recommendation. Sized whole shares only, because the paper broker can't attach a GTC stop to fractional shares: **SPY** 1, **XOM** 3, **CVX** 2, **AMGN** 1. Entries were limits inside each zone, no earlier than 15 minutes after the open, and unfilled entries were set to cancel by 12:45 PM ET."
+    },
+    {
+      "id": "seed-t2-risk-day1-clear",
+      "botId": "risk",
+      "createdAt": "2026-10-19T20:36:00.000Z",
+      "body": "Risk: CLEAR. Paper desk plan (EOD history) — not a recommendation. Four tickets cleared, each with a GTC stop attached at entry: **XOM** stop **$169.74**, **CVX** **$213.18**, **AMGN** **$404.64**, and **SPY** 4% below fill. Max loss if every stop hit was about **$117** with all four filled (about **$78** as actually filled, SPY skipped). Limits: 15% per-name cap, −2% daily stop, kill switch at **$9,471.81**."
+    },
+    {
+      "id": "seed-t2-execution-day1",
+      "botId": "execution",
+      "createdAt": "2026-10-19T20:38:00.000Z",
+      "body": "Test 2 Day-1 fills (broker-confirmed): **CVX** 2 @ **$224.92**, **XOM** 3 @ **$179.15**, **AMGN** 1 @ **$431.10**, all filled between 9:48 and 9:50 AM ET. Each fill's GTC sell stop went live right away and is still working. **SPY** was skipped: at entry time it traded above the top of its zone, and the desk doesn't chase. No rejects, no expired or canceled tickets."
+    },
+    {
+      "id": "seed-t2-risk-day1-eod",
+      "botId": "risk",
+      "createdAt": "2026-10-19T20:40:00.000Z",
+      "body": "Test 2 Day-1 EOD: equity **$9,962.61** / cash **$8,551.94**. Day P&L −**$7.72** (−0.08%), all unrealized: **AMGN** −$5.70, **XOM** −$1.04, **CVX** −$0.98. Gross exposure about 14%; largest name **XOM** about 5.4% (cap 15%). Daily stop and kill switch nowhere near. Every held share has a live GTC stop."
+    },
+    {
+      "id": "seed-t2-cos-day1-eod",
+      "botId": "chief-of-staff",
+      "createdAt": "2026-10-19T20:42:00.000Z",
+      "body": "Test 2 Day-1 close (session 1 of 20, Sun Oct 18 → Sun Nov 15, 2026 ET). The desk put its first Test 2 positions on: **XOM**, **CVX** and **AMGN**, each with a working stop; **SPY** core skipped on a gap above its zone. Equity **$9,962.61**, −**$7.72** (−0.08%) vs the **$9,970.33** Test 2 start. Holding overnight with stops in place, regular hours only. Paper only."
+    },
+    {
+      "id": "seed-t2-ops-day1",
+      "botId": "dashboard-ops",
+      "createdAt": "2026-10-19T20:44:00.000Z",
+      "body": "Ops note — Test 2 Day-1 history is on the public feed. Clock shows 27 of 28 days left; baseline **$9,970.33**."
+    }
+  ]
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { Blotter } from "@/components/desk/blotter";
 import { DeskBackdrop } from "@/components/desk/desk-backdrop";
 import {
   DeskMessageList,
@@ -19,18 +20,21 @@ import {
 } from "@/lib/constants";
 import {
   TEST_1_ARCHIVE,
+  archiveBlotterDescription,
   test1ArchiveSummaryLine,
 } from "@/lib/desk-feed-archive";
 import { DESK_BOTS } from "@/lib/desk-feed-display";
 import { loadArchiveMessages } from "@/lib/desk-feed-store";
+import { loadTest1ArchiveOrders } from "@/lib/snapshot";
 
 export const metadata: Metadata = {
   title: `${TEST_1_ARCHIVE.label} archive · ${DESK_NAME}`,
   description: `${TEST_1_ARCHIVE.label} public desk feed. ${test1ArchiveSummaryLine()}. Paper only. Not a private Tim chat.`,
 };
 
-export default function Test1ArchivePage() {
+export default async function Test1ArchivePage() {
   const messages = loadArchiveMessages();
+  const orders = await loadTest1ArchiveOrders();
 
   return (
     <DeskBackdrop>
@@ -75,6 +79,13 @@ export default function Test1ArchivePage() {
             </p>
           </GlassBody>
         </GlassPanel>
+
+        <Blotter
+          orders={orders}
+          description={archiveBlotterDescription()}
+          emptyState={`No ${TEST_1_ARCHIVE.label} orders in this archive.`}
+          showArchiveLink={false}
+        />
 
         <GlassPanel>
           <GlassHeader

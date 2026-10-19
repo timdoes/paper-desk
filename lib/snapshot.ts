@@ -11,6 +11,13 @@ import {
   localFixtureEnabled,
 } from "@/lib/equity-curve-fixture";
 import { parseBrokerNumber } from "@/lib/format";
+import {
+  ALPACA_ORDERS_PATH,
+  filterTest1ArchiveOrders,
+  hasTest1OrdersArchive,
+  loadArchivedTest1Orders,
+  takeRecentLiveOrders,
+} from "@/lib/orders";
 import { keysConfigured } from "@/lib/paper-guard";
 import type {
   AlpacaAccount,
@@ -18,6 +25,7 @@ import type {
   AlpacaPortfolioHistory,
   AlpacaPosition,
   DeskSnapshot,
+  OrderView,
   PositionView,
   UnconfiguredPayload,
 } from "@/lib/types";
@@ -30,11 +38,25 @@ export async function loadPositions() {
   return positions.map(toPositionView);
 }
 
-export async function loadOrders() {
-  const orders = await alpacaFetch<AlpacaOrder[]>(
-    "/v2/orders?status=all&limit=50&direction=desc&nested=true",
-  );
+export async function loadBrokerOrders(): Promise<OrderView[]> {
+  const orders = await alpacaFetch<AlpacaOrder[]>(ALPACA_ORDERS_PATH);
   return orders.map(toOrderView);
+}
+
+export async function loadOrders(options?: {
+  sinceIso?: string | null;
+}): Promise<OrderView[]> {
+  return takeRecentLiveOrders(await loadBrokerOrders(), options);
+}
+
+export async function loadTest1ArchiveOrders(): Promise<OrderView[]> {
+  if (hasTest1OrdersArchive()) {
+    return loadArchivedTest1Orders();
+  }
+  if (!keysConfigured()) {
+    return [];
+  }
+  return filterTest1ArchiveOrders(await loadBrokerOrders());
 }
 
 export async function loadHistory(liveEquity?: number | null) {

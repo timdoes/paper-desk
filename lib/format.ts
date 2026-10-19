@@ -80,6 +80,9 @@ export function pnlClass(value: number | null | undefined): string {
   }
 }
 
+export const ET_TIME_ZONE = "America/New_York";
+
+/** Friendly blotter timestamp in Eastern Time (en-US, America/New_York). */
 export function formatDeskDay(iso: string | null | undefined): string {
   if (!iso) {
     return "—";
@@ -91,12 +94,11 @@ export function formatDeskDay(iso: string | null | undefined): string {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
-    hour: "2-digit",
+    hour: "numeric",
     minute: "2-digit",
+    timeZone: ET_TIME_ZONE,
   }).format(date);
 }
-
-export const ET_TIME_ZONE = "America/New_York";
 
 const ISO_CALENDAR_DATE_RE = /^(\d{4})-(\d{2})-(\d{2})/;
 

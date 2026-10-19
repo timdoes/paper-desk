@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import { DESK_LENGTH_DAYS, EQUITY_CURVE_WINDOW_DAYS } from "./constants";
 import {
   deskFundedEtDateKey,
+  deskStakeUsd,
   deskStartEtDateKey,
   getDeskClock,
   shapeEquityCurvePoints,
@@ -37,6 +38,63 @@ describe("toAccountView", () => {
       /a1b2c3d4-e5f6-7890-abcd-ef1234567890/,
     );
     assert.doesNotMatch(JSON.stringify(view), /PA123456789/);
+  });
+});
+
+describe("deskStakeUsd", () => {
+  const previous = process.env.DESK_STAKE_USD;
+
+  function restoreStakeEnv() {
+    if (previous === undefined) {
+      delete process.env.DESK_STAKE_USD;
+    } else {
+      process.env.DESK_STAKE_USD = previous;
+    }
+  }
+
+  it("falls back to 10000 when unset", () => {
+    delete process.env.DESK_STAKE_USD;
+    try {
+      assert.equal(deskStakeUsd(), 10_000);
+    } finally {
+      restoreStakeEnv();
+    }
+  });
+
+  it("falls back to 10000 when invalid or not positive", () => {
+    try {
+      process.env.DESK_STAKE_USD = "nope";
+      assert.equal(deskStakeUsd(), 10_000);
+      process.env.DESK_STAKE_USD = "0";
+      assert.equal(deskStakeUsd(), 10_000);
+      process.env.DESK_STAKE_USD = "-1";
+      assert.equal(deskStakeUsd(), 10_000);
+      process.env.DESK_STAKE_USD = "Infinity";
+      assert.equal(deskStakeUsd(), 10_000);
+    } finally {
+      restoreStakeEnv();
+    }
+  });
+
+  it("uses 9970.33 so matching equity has ROI 0", () => {
+    process.env.DESK_STAKE_USD = "9970.33";
+    try {
+      assert.equal(deskStakeUsd(), 9970.33);
+      const view = toAccountView({
+        status: "ACTIVE",
+        currency: "USD",
+        cash: "9970.33",
+        buying_power: "9970.33",
+        equity: "9970.33",
+        last_equity: "9970.33",
+        portfolio_value: "9970.33",
+        long_market_value: "0",
+      });
+      assert.equal(view.roiVsStake, 0);
+      assert.equal(view.roiVsStakePct, 0);
+    } finally {
+      restoreStakeEnv();
+    }
   });
 });
 

@@ -14,7 +14,27 @@ export const TEST_1_ARCHIVE = {
 } as const;
 
 export const LIVE_DESK_TEST_LABEL = "Test 2";
+/** Live blotter row cap, applied after the Test 2 cutoff. */
+export const BLOTTER_LIMIT = 50;
 
 export function test1ArchiveSummaryLine(): string {
   return `${TEST_1_ARCHIVE.startUsdDisplay} → ${TEST_1_ARCHIVE.endUsdDisplay}, ${TEST_1_ARCHIVE.pnlPctDisplay}`;
+}
+
+export function liveBlotterDescription(
+  testLabel: string = LIVE_DESK_TEST_LABEL,
+): string {
+  return `${testLabel} orders and fills from Alpaca Paper · last ${BLOTTER_LIMIT}`;
+}
+
+export function liveBlotterEmptyState(
+  testLabel: string = LIVE_DESK_TEST_LABEL,
+): string {
+  return `No ${testLabel} orders yet. Orders appear here once the desk trades.`;
+}
+
+export function archiveBlotterDescription(
+  testLabel: string = TEST_1_ARCHIVE.label,
+): string {
+  return `${testLabel} orders and fills from Alpaca Paper`;
 }

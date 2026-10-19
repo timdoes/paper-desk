@@ -1,3 +1,4 @@
+import { formatDeskDay } from "./format";
 import type { DeskBot, DeskBotId } from "./types";
 
 export const DESK_BOTS: DeskBot[] = [
@@ -70,8 +71,6 @@ export function getDeskBot(id: DeskBotId): DeskBot {
   }
 }
 
-const FEED_TIME_ZONE = "America/New_York";
-
 export function formatFeedTimestamp(iso: string, now = Date.now()): string {
   const time = Date.parse(iso);
   if (Number.isNaN(time)) {
@@ -91,11 +90,5 @@ export function formatFeedTimestamp(iso: string, now = Date.now()): string {
     return `${hours}h ago`;
   }
 
-  return `${new Intl.DateTimeFormat("en-US", {
-    timeZone: FEED_TIME_ZONE,
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(time))} ET`;
+  return `${formatDeskDay(iso)} ET`;
 }

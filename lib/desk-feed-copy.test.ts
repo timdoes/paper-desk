@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   TEST_1_ARCHIVE,
+  archiveBlotterDescription,
+  liveBlotterDescription,
+  liveBlotterEmptyState,
   test1ArchiveSummaryLine,
 } from "./desk-feed-archive";
 import { deskFeedThreadCopy } from "./desk-feed-copy";
@@ -55,5 +58,20 @@ describe("Test 1 archive summary", () => {
       "$10,000.00 → $9,970.33, −0.30%",
     );
     assert.equal(TEST_1_ARCHIVE.href, "/archive/test-1");
+  });
+
+  it("names the live blotter as Test 2 last-50", () => {
+    assert.equal(
+      liveBlotterDescription(),
+      "Test 2 orders and fills from Alpaca Paper · last 50",
+    );
+    assert.equal(
+      liveBlotterEmptyState(),
+      "No Test 2 orders yet. Orders appear here once the desk trades.",
+    );
+    assert.equal(
+      archiveBlotterDescription(),
+      "Test 1 orders and fills from Alpaca Paper",
+    );
   });
 });

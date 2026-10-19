@@ -49,6 +49,11 @@ const equityLibSource = readFileSync(
   new URL("./equity-curve.ts", import.meta.url),
   "utf8",
 );
+const blotterSource = readFileSync(
+  new URL("../components/desk/blotter.tsx", import.meta.url),
+  "utf8",
+);
+const ordersLibSource = readFileSync(new URL("./orders.ts", import.meta.url), "utf8");
 const riskStripSource = readFileSync(
   new URL("../components/desk/risk-strip.tsx", import.meta.url),
   "utf8",
@@ -107,6 +112,8 @@ describe("mandate clock", () => {
     assert.doesNotMatch(headerSource, /clock ends/);
     assert.match(kpiSource, /formatEtDate/);
     assert.doesNotMatch(kpiSource, /slice\(0,\s*10\)/);
+    assert.match(blotterSource, /formatDeskDay/);
+    assert.match(ordersLibSource, /deskFeedCutoffMs/);
   });
 
   it("keeps the 1M equity-curve window independent of the mandate", () => {

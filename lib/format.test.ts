@@ -6,6 +6,7 @@ import {
   etCalendarDateKey,
   equityCurveTicks,
   equityCurveWindow,
+  formatDeskDay,
   formatEquityCurveDate,
   formatEtDate,
   formatEtDateRange,
@@ -21,6 +22,26 @@ function naiveEtDate(iso: string): string {
     timeZone: "America/New_York",
   });
 }
+
+describe("formatDeskDay", () => {
+  it("labels blotter times in America/New_York, not the host or Pacific clock", () => {
+    const spyLimit = "2026-10-12T13:51:50.421175Z";
+    assert.equal(
+      new Date(spyLimit).toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        timeZone: "America/Los_Angeles",
+      }),
+      "Oct 12, 6:51 AM",
+    );
+    assert.equal(formatDeskDay(spyLimit), "Oct 12, 9:51 AM");
+    assert.equal(formatDeskDay("2026-10-18T00:00:00-04:00"), "Oct 18, 12:00 AM");
+    assert.equal(formatDeskDay(null), "—");
+    assert.equal(formatDeskDay("not-a-date"), "—");
+  });
+});
 
 describe("formatEtDate", () => {
   it("keeps a date-only ISO string on that civil day in Eastern Time", () => {

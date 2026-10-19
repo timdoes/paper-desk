@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -7,6 +8,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  TEST_1_ARCHIVE,
+  liveBlotterDescription,
+  liveBlotterEmptyState,
+} from "@/lib/desk-feed-archive";
 import { formatDeskDay, formatQty, formatUsd } from "@/lib/format";
 import type { OrderView } from "@/lib/types";
 import { GlassBody, GlassHeader, GlassPanel } from "@/components/desk/glass-panel";
@@ -22,18 +28,37 @@ function statusVariant(status: string) {
   return "secondary" as const;
 }
 
-export function Blotter({ orders }: { orders: OrderView[] }) {
+export function Blotter({
+  orders,
+  description = liveBlotterDescription(),
+  emptyState = liveBlotterEmptyState(),
+  archiveHref = TEST_1_ARCHIVE.href,
+  archiveLabel = `${TEST_1_ARCHIVE.label} archive`,
+  showArchiveLink = true,
+}: {
+  orders: OrderView[];
+  description?: string;
+  emptyState?: string;
+  archiveHref?: string;
+  archiveLabel?: string;
+  showArchiveLink?: boolean;
+}) {
   return (
     <GlassPanel>
-      <GlassHeader
-        title="Blotter"
-        description="Recent orders and fills from Alpaca Paper · last 50"
-      />
+      <GlassHeader title="Blotter" description={description} />
       <GlassBody className="px-0">
         {orders.length === 0 ? (
-          <p className="px-5 pb-2 text-sm text-white/40">
-            No recent orders from Alpaca Paper.
-          </p>
+          <div className="space-y-3 px-5 pb-2">
+            <p className="text-sm text-white/40">{emptyState}</p>
+            {showArchiveLink ? (
+              <Link
+                href={archiveHref}
+                className="inline-flex min-h-11 items-center text-sm text-emerald-300/85 underline-offset-4 hover:text-emerald-200 hover:underline"
+              >
+                {archiveLabel}
+              </Link>
+            ) : null}
+          </div>
         ) : (
           <Table>
             <TableHeader>

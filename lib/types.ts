@@ -187,6 +187,8 @@ export type UnconfiguredPayload = {
   configured: false;
 };
 
+export type DeskDataSource = "alpaca" | "local-fixture";
+
 export type DeskSnapshot = {
   configured: true;
   paper: true;
@@ -201,6 +203,7 @@ export type DeskSnapshot = {
     timeframe: string | null;
     points: HistoryPoint[];
   };
+  dataSource?: DeskDataSource;
 };
 
 export const DESK_BOT_IDS = [

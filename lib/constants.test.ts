@@ -33,6 +33,10 @@ const equitySource = readFileSync(
   new URL("../components/desk/equity-curve.tsx", import.meta.url),
   "utf8",
 );
+const equityLibSource = readFileSync(
+  new URL("./equity-curve.ts", import.meta.url),
+  "utf8",
+);
 const riskStripSource = readFileSync(
   new URL("../components/desk/risk-strip.tsx", import.meta.url),
   "utf8",
@@ -83,9 +87,10 @@ describe("mandate clock", () => {
     assert.doesNotMatch(feedSource, /30-day/);
   });
 
-  it("keeps the rolling equity-curve window independent of the mandate", () => {
-    assert.match(equitySource, /EQUITY_CURVE_WINDOW_DAYS/);
+  it("keeps the 1M equity-curve window independent of the mandate", () => {
+    assert.match(equityLibSource, /EQUITY_CURVE_WINDOW_DAYS/);
     assert.doesNotMatch(equitySource, /DESK_LENGTH_DAYS/);
+    assert.doesNotMatch(equityLibSource, /DESK_LENGTH_DAYS/);
   });
 });
 

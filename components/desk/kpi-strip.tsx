@@ -1,6 +1,5 @@
 import { formatPct, formatUsd, pnlClass } from "@/lib/format";
 import type { AccountView, DeskClock } from "@/lib/types";
-import { TEST_STAKE_USD } from "@/lib/constants";
 
 function Kpi({
   label,
@@ -29,9 +28,11 @@ function Kpi({
 export function KpiStrip({
   account,
   clock,
+  stake,
 }: {
   account: AccountView;
   clock: DeskClock;
+  stake: number;
 }) {
   const daysValue = clock.configured
     ? `${clock.daysLeft}`
@@ -56,9 +57,9 @@ export function KpiStrip({
         toneClass={pnlClass(account.dayPl)}
       />
       <Kpi
-        label="ROI vs $10k"
+        label={`ROI vs ${formatUsd(stake)}`}
         value={formatPct(account.roiVsStakePct)}
-        hint={`${formatUsd(account.roiVsStake)} vs ${formatUsd(TEST_STAKE_USD)} stake`}
+        hint={`${formatUsd(account.roiVsStake)} vs ${formatUsd(stake)} stake`}
         toneClass={pnlClass(account.roiVsStake)}
       />
       <Kpi label="Cash" value={formatUsd(account.cash)} hint="Settled cash" />

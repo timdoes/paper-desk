@@ -90,6 +90,21 @@ export function getDeskClock(
   };
 }
 
+/** ROI baseline. Positive finite `DESK_STAKE_USD`, else `TEST_STAKE_USD`. */
+export function deskStakeUsd(
+  raw: string | null | undefined = process.env.DESK_STAKE_USD,
+): number {
+  const trimmed = raw?.trim() ?? "";
+  if (!trimmed) {
+    return TEST_STAKE_USD;
+  }
+  const parsed = Number(trimmed);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return TEST_STAKE_USD;
+  }
+  return parsed;
+}
+
 export function toAccountView(account: AlpacaAccount): AccountView {
   const equity = parseBrokerNumber(account.equity);
   const lastEquity = parseBrokerNumber(account.last_equity);
@@ -99,8 +114,9 @@ export function toAccountView(account: AlpacaAccount): AccountView {
     dayPl == null || lastEquity == null || lastEquity === 0
       ? null
       : dayPl / lastEquity;
-  const roiVsStake = equity == null ? null : equity - TEST_STAKE_USD;
-  const roiVsStakePct = equity == null ? null : roiVsStake! / TEST_STAKE_USD;
+  const stake = deskStakeUsd();
+  const roiVsStake = equity == null ? null : equity - stake;
+  const roiVsStakePct = equity == null ? null : roiVsStake! / stake;
 
   return {
     status: account.status ?? null,
@@ -279,7 +295,7 @@ export function buildAccountPayload(
     configured: true as const,
     paper: true as const,
     base: PAPER_API_BASE,
-    stake: TEST_STAKE_USD,
+    stake: deskStakeUsd(),
     clock: getDeskClock(),
     account: view,
     risk: deskRiskState(view.equity, view.lastEquity, positions),

@@ -112,9 +112,10 @@ export function PaperDesk({ snapshot }: { snapshot: DeskSnapshot }) {
             void refresh();
           }}
           refreshing={refreshing}
+          stake={desk.stake}
         />
         <RiskStrip risk={desk.risk} />
-        <KpiStrip account={desk.account} clock={desk.clock} />
+        <KpiStrip account={desk.account} clock={desk.clock} stake={desk.stake} />
         <EquityCurve points={desk.history.points} />
         <DeskFeed refreshTick={feedTick} />
         <PositionsTable positions={desk.positions} />

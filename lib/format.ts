@@ -21,6 +21,20 @@ export function formatUsd(value: number | null | undefined): string {
   }).format(value);
 }
 
+export function formatSignedUsd(value: number | null | undefined): string {
+  if (value == null || Number.isNaN(value)) {
+    return "—";
+  }
+  const formatted = formatUsd(Math.abs(value));
+  if (value > 0) {
+    return `+${formatted}`;
+  }
+  if (value < 0) {
+    return `−${formatted}`;
+  }
+  return formatted;
+}
+
 export function formatQty(value: number | null | undefined): string {
   if (value == null || Number.isNaN(value)) {
     return "—";
@@ -150,6 +164,23 @@ export function equityCurveWindow(
   }
   ticks.push(endMs);
   return { startKey, endKey, startMs, endMs, ticks };
+}
+
+export function equityCurveTicks(startKey: string, endKey: string): number[] {
+  if (!startKey || !endKey || startKey > endKey) {
+    return [];
+  }
+  let days = 1;
+  for (let key = startKey; key < endKey; key = addCalendarDays(key, 1)) {
+    days += 1;
+  }
+  const step = days <= 8 ? 1 : days <= 40 ? 5 : days <= 100 ? 14 : 28;
+  const ticks: number[] = [];
+  for (let key = startKey; key < endKey; key = addCalendarDays(key, step)) {
+    ticks.push(noonUtcForDateKey(key));
+  }
+  ticks.push(noonUtcForDateKey(endKey));
+  return ticks;
 }
 
 /**

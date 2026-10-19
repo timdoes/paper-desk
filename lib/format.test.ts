@@ -4,8 +4,10 @@ import { EQUITY_CURVE_WINDOW_DAYS } from "./constants";
 import {
   addCalendarDays,
   etCalendarDateKey,
+  equityCurveTicks,
   equityCurveWindow,
   formatEquityCurveDate,
+  formatSignedUsd,
 } from "./format";
 
 describe("formatEquityCurveDate", () => {
@@ -66,6 +68,25 @@ describe("etCalendarDateKey", () => {
 
   it("uses the ET date, not the UTC date, around midnight", () => {
     assert.equal(etCalendarDateKey(Date.parse("2026-09-22T03:30:00.000Z")), "2026-09-21");
+  });
+});
+
+describe("formatSignedUsd", () => {
+  it("adds an explicit plus for gains and a minus for losses", () => {
+    assert.equal(formatSignedUsd(12.34), "+$12.34");
+    assert.equal(formatSignedUsd(-12.34), "−$12.34");
+    assert.equal(formatSignedUsd(0), "$0.00");
+    assert.equal(formatSignedUsd(null), "—");
+  });
+});
+
+describe("equityCurveTicks", () => {
+  it("always includes the last day and steps up on longer windows", () => {
+    const week = equityCurveTicks("2026-10-13", "2026-10-19");
+    assert.equal(week[week.length - 1], Date.parse("2026-10-19T12:00:00.000Z"));
+    assert.ok(week.length >= 2);
+    const month = equityCurveTicks("2026-09-20", "2026-10-19");
+    assert.ok(month.length < week.length + 10);
   });
 });
 

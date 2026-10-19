@@ -6,8 +6,14 @@ export const PAPER_ALPACA_HOST = "paper-api.alpaca.markets";
 export const TEST_STAKE_USD = 10_000;
 /** Mandate length: exactly four weeks, Sunday-anchored. */
 export const DESK_LENGTH_DAYS = 28;
-/** Rolling ET equity-curve window ending today. Independent of the mandate clock. */
+/** 1M equity-curve range length in ET calendar days. Independent of the mandate clock. */
 export const EQUITY_CURVE_WINDOW_DAYS = 30;
+/** 1W equity-curve range length in ET calendar days. */
+export const EQUITY_CURVE_WEEK_DAYS = 7;
+/** Y-axis pad as a fraction of the plotted min/max span. */
+export const EQUITY_CURVE_PAD_RATIO = 0.1;
+/** Minimum half-span (dollars) so a near-flat stretch is not jagged noise. */
+export const EQUITY_CURVE_MIN_HALF_SPAN = 25;
 /** Test 2 max position: 15% of equity. */
 export const MAX_NAME_NAV_PCT = 0.15;
 /** Test 2 daily loss breaker: −2% vs prior close. */

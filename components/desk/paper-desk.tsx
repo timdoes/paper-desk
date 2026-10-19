@@ -22,6 +22,16 @@ export function PaperDesk({ snapshot }: { snapshot: DeskSnapshot }) {
   const [feedTick, setFeedTick] = useState(0);
 
   async function refresh() {
+    if (desk.dataSource === "local-fixture") {
+      setRefreshedAt(
+        new Date().toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }),
+      );
+      return;
+    }
     setRefreshing(true);
     try {
       const [accountRes, positionsRes, ordersRes, historyRes] = await Promise.all([
@@ -116,7 +126,12 @@ export function PaperDesk({ snapshot }: { snapshot: DeskSnapshot }) {
         />
         <RiskStrip risk={desk.risk} />
         <KpiStrip account={desk.account} clock={desk.clock} stake={desk.stake} />
-        <EquityCurve points={desk.history.points} />
+        <EquityCurve
+          points={desk.history.points}
+          stake={desk.stake}
+          clock={desk.clock}
+          dataSource={desk.dataSource}
+        />
         <DeskFeed refreshTick={feedTick} />
         <PositionsTable positions={desk.positions} />
         <Blotter orders={desk.orders} />

@@ -6,6 +6,10 @@ import {
   toOrderView,
   toPositionView,
 } from "@/lib/desk";
+import {
+  loadLocalFixtureSnapshot,
+  localFixtureEnabled,
+} from "@/lib/equity-curve-fixture";
 import { parseBrokerNumber } from "@/lib/format";
 import { keysConfigured } from "@/lib/paper-guard";
 import type {
@@ -19,7 +23,7 @@ import type {
 } from "@/lib/types";
 
 const PORTFOLIO_HISTORY_PATH =
-  "/v2/account/portfolio/history?period=1M&timeframe=1D";
+  "/v2/account/portfolio/history?period=all&timeframe=1D";
 
 export async function loadPositions() {
   const positions = await alpacaFetch<AlpacaPosition[]>("/v2/positions");
@@ -61,6 +65,9 @@ export async function loadDeskSnapshot(): Promise<
   DeskSnapshot | UnconfiguredPayload
 > {
   if (!keysConfigured()) {
+    if (localFixtureEnabled()) {
+      return loadLocalFixtureSnapshot();
+    }
     return { configured: false };
   }
 

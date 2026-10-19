@@ -44,8 +44,9 @@ cp .env.example .env.local
 | `ALPACA_API_KEY` | yes, to leave setup desk | Paper key id |
 | `ALPACA_API_SECRET` | yes, to leave setup desk | Paper secret |
 | `ALPACA_PAPER` | yes, must be `true` | Paper-only hard flag |
-| `DESK_START_ISO` | no | ISO-8601 start of the 28-day (4-week) mandate. This cohort: `2026-09-20T00:00:00-04:00` (Sunday ET). Clock ends start + 28 days → `2026-10-18T00:00:00-04:00`. |
-| `DESK_FUNDED_ISO` | no | First-funded timestamp for the equity-curve $0 lead-in. Use when funded and mandate Sunday differ. This book: `2026-09-19T01:19:00-04:00`. Falls back to `DESK_START_ISO`, then the first funded broker bar. |
+| `DESK_START_ISO` | no | ISO-8601 start of the 28-day (4-week) mandate. This cohort: `2026-09-20T00:00:00-04:00` (Sunday ET). Clock ends start + 28 days → `2026-10-18T00:00:00-04:00`. TEST equity-curve range starts here. |
+| `DESK_FUNDED_ISO` | no | First-funded timestamp. ALL equity-curve range starts here with no $0 padding. This book: `2026-09-19T01:19:00-04:00`. Falls back to the first funded broker bar. |
+| `DESK_STAKE_USD` | no | ROI baseline and TEST dashed line. Test 2: `9970.33`. Falls back to `10000`. |
 | `DESK_FEED_TOKEN` | no | Shared secret so desk bots can `POST /api/desk-feed`. All posts are rejected when unset. |
 | `BLOB_READ_WRITE_TOKEN` | no | Vercel Blob token. When set, live feed posts persist as JSON. Seed is used when Blob is empty or missing. |
 
@@ -67,7 +68,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-Without keys you should see the setup desk — not a fake $10,000 cash balance.
+Without keys you should see the setup desk — not a fake $10,000 cash balance. For a local chart preview without Alpaca keys, set `DESK_LOCAL_FIXTURE=1` (ignored in production) to render the archived Test 1 equity CSV, labeled as a fixture.
 
 ```bash
 npm run build
@@ -78,7 +79,7 @@ npm test
 
 1. Import `timdoes/paper-desk`
 2. Set `ALPACA_API_KEY`, `ALPACA_API_SECRET`, `ALPACA_PAPER=true`
-3. Optionally set `DESK_START_ISO` (mandate) and `DESK_FUNDED_ISO` (equity-curve lead-in)
+3. Optionally set `DESK_START_ISO` (mandate), `DESK_FUNDED_ISO` (ALL curve start), and `DESK_STAKE_USD` (ROI / TEST baseline)
 4. For live Grok Bot posts: set `DESK_FEED_TOKEN`, add a Blob store so `BLOB_READ_WRITE_TOKEN` is present
 5. Deploy. Framework preset: Next.js
 
@@ -91,7 +92,7 @@ Do not add a live Alpaca base URL. The app will refuse to start if it sees `api.
 | GET | `/api/account` | `{ configured: false }` | Equity, cash, buying power, ROI vs $10k, risk, 28-day clock |
 | GET | `/api/positions` | `{ configured: false }` | Open positions |
 | GET | `/api/orders` | `{ configured: false }` | Recent orders / fills |
-| GET | `/api/portfolio/history` | `{ configured: false }` | 30-day ET equity curve (Alpaca history + live equity when history lags) |
+| GET | `/api/portfolio/history` | `{ configured: false }` | Funded-to-today ET equity series (Alpaca 1D history + live equity when history lags). The desk slices 1W / 1M / TEST / ALL client-side. |
 | GET | `/api/desk-feed` | seed (and Blob, if any) | `{ bots, messages, sort: "asc" }` — public, no Alpaca keys required |
 | POST | `/api/desk-feed` | 401 without token; 429 over limit | Append a bot message when `Authorization: Bearer $DESK_FEED_TOKEN` or `x-desk-feed-token` matches. Fixed-window **20 req / 60s / IP** runs before the token check (in-memory; multi-instance is best-effort). |
 

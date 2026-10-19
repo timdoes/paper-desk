@@ -119,7 +119,7 @@ export function evaluateOrderRisk(input: {
       allowed: false,
       code: "MISSING_EQUITY",
       reason:
-        "Cannot evaluate the ~3% daily loss breaker without equity and last_equity from Alpaca Paper. Buys are blocked.",
+        `Cannot evaluate the ~${(DAILY_LOSS_BREAKER_PCT * 100).toFixed(0)}% daily loss breaker without equity and last_equity from Alpaca Paper. Buys are blocked.`,
       dailyLossTripped: false,
       nameCapPct: MAX_NAME_NAV_PCT,
       projectedNameNavPct: null,
@@ -142,7 +142,7 @@ export function evaluateOrderRisk(input: {
       allowed: false,
       code: "MISSING_EQUITY",
       reason:
-        "Cannot enforce the 10% NAV name cap without equity from Alpaca Paper. Buys are blocked.",
+        `Cannot enforce the ${(MAX_NAME_NAV_PCT * 100).toFixed(0)}% NAV name cap without equity from Alpaca Paper. Buys are blocked.`,
       dailyLossTripped: false,
       nameCapPct: MAX_NAME_NAV_PCT,
       projectedNameNavPct: null,
@@ -155,7 +155,7 @@ export function evaluateOrderRisk(input: {
       allowed: false,
       code: "NO_MARK_PRICE",
       reason:
-        "Cannot enforce the 10% NAV name cap on a market buy without a mark from an open position. Use a limit order so the desk can price the risk.",
+        `Cannot enforce the ${(MAX_NAME_NAV_PCT * 100).toFixed(0)}% NAV name cap on a market buy without a mark from an open position. Use a limit order so the desk can price the risk.`,
       dailyLossTripped: false,
       nameCapPct: MAX_NAME_NAV_PCT,
       projectedNameNavPct: null,

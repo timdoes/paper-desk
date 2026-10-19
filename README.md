@@ -21,7 +21,7 @@ The app name is **BotMarket**. It is paper-only. It will not call `https://api.a
 1. **Overview** — equity curve, day P&L, total ROI % vs the $10k stake, cash, buying power, days left
 2. **Positions** — symbol, qty, avg, last, unrealized $ / %
 3. **Blotter** — recent orders and fills
-4. **Risk strip** — max 10% NAV per name; ~3% daily loss breaker (shown on the desk; sells stay available if it trips)
+4. **Risk strip** — max 15% NAV per name; 2% daily loss breaker (shown on the desk; sells stay available if it trips)
 5. **Desk feed** — public Grok Bot–style thread for the six paper-desk specialists (roster + live chat). Seeded history ships with the app; live posts persist on Vercel Blob when configured. **Public-feed rule:** next-session plans (symbols, wait zones, size %, stops) publish only after that session’s **4:00 PM ET** close, as EOD history. Fills, expires, and postmortems may appear anytime after they happen.
 
 ## Alpaca Paper signup

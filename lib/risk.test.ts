@@ -14,14 +14,14 @@ const aapl: PositionView = {
 };
 
 describe("evaluateOrderRisk", () => {
-  it("blocks buys when the daily loss breaker is open", () => {
+  it("blocks buys when the daily loss breaker is open at −2%", () => {
     const decision = evaluateOrderRisk({
       side: "buy",
       type: "limit",
       symbol: "MSFT",
       qty: 1,
       limitPrice: 10,
-      equity: 9700,
+      equity: 9800,
       lastEquity: 10000,
       positions: [],
     });
@@ -31,25 +31,39 @@ describe("evaluateOrderRisk", () => {
     }
   });
 
+  it("allows buys when day P&L is inside the −2% breaker", () => {
+    const decision = evaluateOrderRisk({
+      side: "buy",
+      type: "limit",
+      symbol: "MSFT",
+      qty: 1,
+      limitPrice: 10,
+      equity: 9801,
+      lastEquity: 10000,
+      positions: [],
+    });
+    assert.equal(decision.allowed, true);
+  });
+
   it("still allows sells when the breaker is open", () => {
     const decision = evaluateOrderRisk({
       side: "sell",
       type: "market",
       symbol: "AAPL",
       qty: 1,
-      equity: 9700,
+      equity: 9800,
       lastEquity: 10000,
       positions: [aapl],
     });
     assert.equal(decision.allowed, true);
   });
 
-  it("blocks buys that would exceed 10% NAV", () => {
+  it("blocks buys that would exceed 15% NAV", () => {
     const decision = evaluateOrderRisk({
       side: "buy",
       type: "limit",
       symbol: "NVDA",
-      qty: 20,
+      qty: 16,
       limitPrice: 100,
       equity: 10000,
       lastEquity: 10000,
@@ -61,12 +75,26 @@ describe("evaluateOrderRisk", () => {
     }
   });
 
-  it("allows a limit buy inside the name cap", () => {
+  it("allows a limit buy at 12% NAV (over the old 10% cap, inside 15%)", () => {
     const decision = evaluateOrderRisk({
       side: "buy",
       type: "limit",
       symbol: "MSFT",
-      qty: 5,
+      qty: 12,
+      limitPrice: 100,
+      equity: 10000,
+      lastEquity: 10000,
+      positions: [],
+    });
+    assert.equal(decision.allowed, true);
+  });
+
+  it("allows a limit buy at the 15% name cap", () => {
+    const decision = evaluateOrderRisk({
+      side: "buy",
+      type: "limit",
+      symbol: "MSFT",
+      qty: 15,
       limitPrice: 100,
       equity: 10000,
       lastEquity: 10000,

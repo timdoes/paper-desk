@@ -38,13 +38,13 @@ export function GlassHeader({
 }) {
   return (
     <CardHeader className="border-b border-white/6 px-5 py-4">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div>
           <CardTitle className="font-mono text-[11px] tracking-[0.22em] text-emerald-300/90 uppercase">
             {title}
           </CardTitle>
           {description ? (
-            <CardDescription className="mt-1 text-xs text-white/45">
+            <CardDescription className="mt-1 text-pretty text-xs leading-5 text-white/45">
               {description}
             </CardDescription>
           ) : null}

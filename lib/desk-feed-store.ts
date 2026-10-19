@@ -1,10 +1,14 @@
 import { get, put } from "@vercel/blob";
+import archiveFile from "../data/archive/test-1-desk-feed.json";
 import seedFile from "../data/desk-feed.json";
+import { deskStakeUsd } from "./desk";
+import { deskFeedThreadCopy } from "./desk-feed-copy";
 import {
   blobStoreConfigured,
   DESK_BOTS,
   DESK_FEED_BLOB_PATH,
   DESK_FEED_SORT,
+  filterLiveDeskFeedMessages,
   mergeDeskFeedMessages,
   parseStoredMessages,
   toDeskMessage,
@@ -19,6 +23,35 @@ export type DeskFeedBlobAdapter = {
 
 export function loadSeedMessages(source: unknown = seedFile): DeskMessage[] {
   return parseStoredMessages(source);
+}
+
+export function loadArchiveMessages(
+  source: unknown = archiveFile,
+): DeskMessage[] {
+  return parseStoredMessages(source);
+}
+
+async function loadMergedDeskMessages(
+  adapter?: DeskFeedBlobAdapter | null,
+): Promise<DeskMessage[]> {
+  const seed = loadSeedMessages();
+  const stored = await readBlobFeed(adapter);
+  return mergeDeskFeedMessages(seed, stored);
+}
+
+function toDeskFeedPayload(
+  messages: DeskMessage[],
+  startIso?: string | null,
+): DeskFeedPayload {
+  return {
+    bots: DESK_BOTS,
+    messages: filterLiveDeskFeedMessages(messages, startIso),
+    sort: DESK_FEED_SORT,
+    copy: deskFeedThreadCopy({
+      startIso,
+      stakeUsd: deskStakeUsd(),
+    }),
+  };
 }
 
 export async function readBlobFeed(
@@ -63,14 +96,10 @@ export async function writeBlobFeed(
 
 export async function loadDeskFeed(
   adapter?: DeskFeedBlobAdapter | null,
+  options?: { startIso?: string | null },
 ): Promise<DeskFeedPayload> {
-  const seed = loadSeedMessages();
-  const stored = await readBlobFeed(adapter);
-  return {
-    bots: DESK_BOTS,
-    messages: mergeDeskFeedMessages(seed, stored),
-    sort: DESK_FEED_SORT,
-  };
+  const merged = await loadMergedDeskMessages(adapter);
+  return toDeskFeedPayload(merged, options?.startIso);
 }
 
 export async function appendDeskFeedMessage(
@@ -78,18 +107,15 @@ export async function appendDeskFeedMessage(
   options?: {
     adapter?: DeskFeedBlobAdapter | null;
     now?: Date;
+    startIso?: string | null;
   },
 ): Promise<{ payload: DeskFeedPayload; message: DeskMessage; persisted: boolean }> {
   const message = toDeskMessage(incoming, options?.now);
-  const current = await loadDeskFeed(options?.adapter);
-  const messages = mergeDeskFeedMessages(current.messages, [message]);
+  const current = await loadMergedDeskMessages(options?.adapter);
+  const messages = mergeDeskFeedMessages(current, [message]);
   const persisted = await writeBlobFeed(messages, options?.adapter);
   return {
-    payload: {
-      bots: DESK_BOTS,
-      messages,
-      sort: DESK_FEED_SORT,
-    },
+    payload: toDeskFeedPayload(messages, options?.startIso),
     message,
     persisted,
   };

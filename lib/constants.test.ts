@@ -29,6 +29,14 @@ const feedSource = readFileSync(
   new URL("../components/desk/desk-feed.tsx", import.meta.url),
   "utf8",
 );
+const feedCopySource = readFileSync(
+  new URL("./desk-feed-copy.ts", import.meta.url),
+  "utf8",
+);
+const archivePageSource = readFileSync(
+  new URL("../app/archive/test-1/page.tsx", import.meta.url),
+  "utf8",
+);
 const equitySource = readFileSync(
   new URL("../components/desk/equity-curve.tsx", import.meta.url),
   "utf8",
@@ -83,7 +91,9 @@ describe("mandate clock", () => {
     assert.doesNotMatch(headerSource, /30-day/);
     assert.match(setupSource, /DESK_LENGTH_DAYS/);
     assert.doesNotMatch(setupSource, /30-day/);
-    assert.match(feedSource, /DESK_LENGTH_DAYS/);
+    assert.match(feedCopySource, /DESK_LENGTH_DAYS/);
+    assert.doesNotMatch(feedCopySource, /30-day/);
+    assert.match(archivePageSource, /DESK_LENGTH_DAYS/);
     assert.doesNotMatch(feedSource, /30-day/);
   });
 

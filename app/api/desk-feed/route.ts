@@ -67,6 +67,7 @@ export async function POST(request: Request) {
         bots: result.payload.bots,
         messages: result.payload.messages,
         sort: result.payload.sort,
+        copy: result.payload.copy,
       },
       { status: 201, headers: NO_STORE },
     );

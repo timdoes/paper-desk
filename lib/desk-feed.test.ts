@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import archiveSeedFile from "../data/archive/test-1-desk-feed.json";
 import seedFile from "../data/desk-feed.json";
 import {
   authorizeDeskFeedToken,
   DESK_BOTS,
   extractUsdMentions,
+  filterLiveDeskFeedMessages,
   formatFeedTimestamp,
   isDeskBotId,
   mergeDeskFeedMessages,
@@ -15,6 +17,7 @@ import {
 } from "./desk-feed";
 import {
   appendDeskFeedMessage,
+  loadArchiveMessages,
   loadDeskFeed,
   loadSeedMessages,
   type DeskFeedBlobAdapter,
@@ -332,7 +335,7 @@ describe("desk feed auth", () => {
 describe("merge seed + blob", () => {
   const seed = loadSeedMessages();
 
-  it("keeps seed order when blob is empty or missing", async () => {
+  it("keeps live seed order when blob is empty or missing", async () => {
     const fromNull = await loadDeskFeed(null);
     const fromEmpty = await loadDeskFeed(memoryAdapter({ messages: [] }));
     assert.equal(fromNull.sort, "asc");
@@ -344,39 +347,34 @@ describe("merge seed + blob", () => {
       fromEmpty.messages.map((message) => message.id),
       seed.map((message) => message.id),
     );
-    assert.equal(fromNull.messages[0]?.id, "seed-cos-open");
-    assert.equal(
-      fromNull.messages[fromNull.messages.length - 1]?.id,
-      "seed-ops-dashboard-oct16",
-    );
-    assert.ok(
-      fromNull.messages.some((message) => message.id === "seed-ops-dashboard"),
-    );
-    assert.ok(
-      fromNull.messages.some((message) => message.id === "seed-risk-day2-eod"),
-    );
-    assert.ok(
-      fromNull.messages.some((message) => message.id === "seed-cos-day2-eod"),
-    );
+    assert.equal(fromNull.copy.archiveHref, "/archive/test-1");
+    assert.match(fromNull.copy.archiveLabel, /Test 1 archive/);
+    assert.match(fromNull.copy.description, /Not a private Tim chat/);
   });
 
   it("appends blob messages and lets blob win on the same id", () => {
-    const extra: DeskMessage = {
+    const original: DeskMessage = {
       id: "live-research-1",
       botId: "research",
       body: "Wait zone still NVDA / SPY / XLP. No new marks from me.",
-      createdAt: "2026-10-16T22:05:00.000Z",
+      createdAt: "2026-10-19T22:05:00.000Z",
+    };
+    const extra: DeskMessage = {
+      id: "live-exec-1",
+      botId: "execution",
+      body: "Still flat. No new paper fills to report.",
+      createdAt: "2026-10-19T22:30:00.000Z",
     };
     const edited: DeskMessage = {
-      ...seed[0]!,
-      body: "Tim — clock is running. Same $10k paper open, restated.",
+      ...original,
+      body: "Tim — Test 2 clock is running. Same paper open, restated.",
     };
 
-    const merged = mergeDeskFeedMessages(seed, [edited, extra]);
+    const merged = mergeDeskFeedMessages([original], [edited, extra]);
     assert.equal(merged[0]?.body, edited.body);
     assert.equal(merged[merged.length - 1]?.id, extra.id);
     assert.equal(
-      merged.filter((message) => message.id === seed[0]!.id).length,
+      merged.filter((message) => message.id === original.id).length,
       1,
     );
   });
@@ -387,7 +385,7 @@ describe("merge seed + blob", () => {
       {
         botId: "execution",
         body: "Still flat. No new paper fills to report.",
-        createdAt: "2026-10-16T22:30:00.000Z",
+        createdAt: "2026-10-19T22:30:00.000Z",
       },
       { adapter },
     );
@@ -404,9 +402,111 @@ describe("merge seed + blob", () => {
   });
 });
 
+describe("live feed cutoff", () => {
+  const test2Start = "2026-10-18T00:00:00-04:00";
+  const before: DeskMessage = {
+    id: "seed-cos-28day-wrap",
+    botId: "chief-of-staff",
+    body: "28-day wrap — paper desk only.",
+    createdAt: "2026-10-16T20:58:00.000Z",
+  };
+  const atStart: DeskMessage = {
+    id: "live-cos-test2-open",
+    botId: "chief-of-staff",
+    body: "Test 2 clock is running.",
+    createdAt: "2026-10-18T00:00:00-04:00",
+  };
+  const after: DeskMessage = {
+    id: "live-exec-test2",
+    botId: "execution",
+    body: "Still flat. No new paper fills to report.",
+    createdAt: "2026-10-19T20:05:00.000Z",
+  };
+
+  it("drops messages before DESK_START_ISO and keeps the start instant and later", () => {
+    const live = filterLiveDeskFeedMessages(
+      [before, atStart, after],
+      test2Start,
+    );
+    assert.deepEqual(
+      live.map((message) => message.id),
+      ["live-cos-test2-open", "live-exec-test2"],
+    );
+  });
+
+  it("keeps every message when the start is unset or invalid", () => {
+    const messages = [before, after];
+    assert.deepEqual(filterLiveDeskFeedMessages(messages, null), messages);
+    assert.deepEqual(filterLiveDeskFeedMessages(messages, ""), messages);
+    assert.deepEqual(
+      filterLiveDeskFeedMessages(messages, "not-a-date"),
+      messages,
+    );
+  });
+
+  it("hides Test 1 blob history from GET/POST payloads and still persists Test 2 appends", async () => {
+    const adapter = memoryAdapter({ messages: [before] });
+    const loaded = await loadDeskFeed(adapter, { startIso: test2Start });
+    assert.deepEqual(
+      loaded.messages.map((message) => message.id),
+      [],
+    );
+
+    const result = await appendDeskFeedMessage(
+      {
+        botId: after.botId,
+        body: after.body,
+        createdAt: after.createdAt,
+        id: after.id,
+      },
+      { adapter, startIso: test2Start },
+    );
+
+    assert.equal(result.persisted, true);
+    assert.deepEqual(
+      result.payload.messages.map((message) => message.id),
+      [after.id],
+    );
+
+    const stored = await adapter.read();
+    const storedMessages = parseStoredMessages(stored);
+    assert.deepEqual(
+      storedMessages.map((message) => message.id).sort(),
+      [after.id, before.id].sort(),
+    );
+
+    const reloaded = await loadDeskFeed(adapter, { startIso: test2Start });
+    assert.deepEqual(
+      reloaded.messages.map((message) => message.id),
+      [after.id],
+    );
+  });
+
+  it("keeps Test 1 history in the archive file, not the live seed", () => {
+    const live = parseStoredMessages(seedFile);
+    const archive = loadArchiveMessages();
+    const cutoff = Date.parse(test2Start);
+
+    assert.equal(archive[0]?.id, "seed-cos-open");
+    assert.equal(archive[archive.length - 1]?.id, "seed-ops-dashboard-oct16");
+    assert.ok(archive.some((message) => message.id === "seed-cos-28day-wrap"));
+    assert.equal(live.some((message) => message.id === "seed-cos-open"), false);
+    assert.equal(
+      live.some((message) => message.id === "seed-cos-28day-wrap"),
+      false,
+    );
+    for (const message of live) {
+      assert.ok(Date.parse(message.createdAt) >= cutoff, message.id);
+    }
+    for (const message of archive) {
+      assert.ok(Date.parse(message.createdAt) < cutoff, message.id);
+    }
+  });
+});
+
 describe("no invented balances", () => {
-  it("seed only mentions the public $10k experiment facts", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("Test 1 archive only mentions the public $10k experiment facts", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     assert.ok(seed.length >= 8);
 
     const mentions = seed.flatMap((message) => extractUsdMentions(message.body));
@@ -429,8 +529,8 @@ describe("no invented balances", () => {
     assert.doesNotMatch(joined, /PK[A-Z0-9]{16,}/);
   });
 
-  it("keeps Day-2 after-the-fact fills, expires, and EOD on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-2 after-the-fact fills, expires, and EOD on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.match(byId["seed-execution-day2-live"]!.body, /SKIPPED/);
@@ -442,8 +542,8 @@ describe("no invented balances", () => {
     assert.match(byId["seed-cos-day2-eod"]!.body, /−0\.053%/);
   });
 
-  it("keeps Day-3 after-the-fact fills, expires, and EOD on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-3 after-the-fact fills, expires, and EOD on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.match(
@@ -465,8 +565,8 @@ describe("no invented balances", () => {
     assert.doesNotMatch(byId["seed-cos-day3-eod"]!.body, /Day-4/);
   });
 
-  it("keeps Day-4 after-the-fact fills, expires, and EOD on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-4 after-the-fact fills, expires, and EOD on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.match(
@@ -489,8 +589,8 @@ describe("no invented balances", () => {
     assert.doesNotMatch(byId["seed-cos-day4-eod"]!.body, /Day-5/);
   });
 
-  it("keeps Day-5 after-the-fact fills, expires, and EOD on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-5 after-the-fact fills, expires, and EOD on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.match(
@@ -513,8 +613,8 @@ describe("no invented balances", () => {
     assert.doesNotMatch(byId["seed-cos-day5-eod"]!.body, /Day-6/);
   });
 
-  it("keeps Day-6 after-the-fact fills, expires, and EOD on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-6 after-the-fact fills, expires, and EOD on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.match(
@@ -537,8 +637,8 @@ describe("no invented balances", () => {
     assert.doesNotMatch(byId["seed-cos-day6-eod"]!.body, /Day-7/);
   });
 
-  it("keeps Day-7 after-the-fact fills, expires, and EOD on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-7 after-the-fact fills, expires, and EOD on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.match(
@@ -562,8 +662,8 @@ describe("no invented balances", () => {
     assert.doesNotMatch(byId["seed-cos-day7-eod"]!.body, /Day-8/);
   });
 
-  it("keeps Day-8 after-the-fact fills, expires, and EOD on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-8 after-the-fact fills, expires, and EOD on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.equal(byId["seed-research-day8"], undefined);
@@ -619,8 +719,8 @@ describe("no invented balances", () => {
     assert.doesNotMatch(day8Joined, /STOP HIT|stopped out/i);
   });
 
-  it("keeps Day-9 after-the-fact fills, expires, and EOD on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-9 after-the-fact fills, expires, and EOD on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.equal(byId["seed-research-day9"], undefined);
@@ -663,8 +763,8 @@ describe("no invented balances", () => {
     assert.doesNotMatch(byId["seed-cos-day9-eod"]!.body, /Day-10/);
   });
 
-  it("keeps Day-10 after-the-fact fills, expires, and EOD on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-10 after-the-fact fills, expires, and EOD on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.equal(byId["seed-research-day10"], undefined);
@@ -705,8 +805,8 @@ describe("no invented balances", () => {
     assert.doesNotMatch(byId["seed-execution-day10"]!.body, /49cb854e|2d20c472/);
   });
 
-  it("keeps Day-11 after-the-fact fills, expires, and EOD on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-11 after-the-fact fills, expires, and EOD on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.equal(byId["seed-research-day11"], undefined);
@@ -762,8 +862,8 @@ describe("no invented balances", () => {
     assert.doesNotMatch(byId["seed-execution-day11"]!.body, /49cb854e|2d20c472/);
   });
 
-  it("keeps Day-12 after-the-fact fills, expires, and EOD on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-12 after-the-fact fills, expires, and EOD on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.ok(byId["seed-research-day12"]);
@@ -818,8 +918,8 @@ describe("no invented balances", () => {
     assert.doesNotMatch(byId["seed-execution-day12"]!.body, /49cb854e|2d20c472/);
   });
 
-  it("keeps Day-13 after-the-fact fills, expires, and EOD on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-13 after-the-fact fills, expires, and EOD on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.ok(byId["seed-research-day13"]);
@@ -885,8 +985,8 @@ describe("no invented balances", () => {
     assert.doesNotMatch(byId["seed-execution-day13"]!.body, /49cb854e|2d20c472/);
   });
 
-  it("keeps Day-14 after-the-fact fills, expires, and EOD on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-14 after-the-fact fills, expires, and EOD on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.ok(byId["seed-research-day14"]);
@@ -955,8 +1055,8 @@ describe("no invented balances", () => {
     assert.doesNotMatch(byId["seed-execution-day14"]!.body, /49cb854e|2d20c472/);
   });
 
-  it("keeps Day-15 after-the-fact fills, expires, and EOD on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-15 after-the-fact fills, expires, and EOD on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.ok(byId["seed-research-day15"]);
@@ -1020,8 +1120,8 @@ describe("no invented balances", () => {
     assert.doesNotMatch(byId["seed-execution-day15"]!.body, /49cb854e|2d20c472/);
   });
 
-  it("keeps Day-16 after-the-fact fills, expires, and EOD on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-16 after-the-fact fills, expires, and EOD on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.ok(byId["seed-research-day16"]);
@@ -1091,8 +1191,8 @@ describe("no invented balances", () => {
     assert.doesNotMatch(byId["seed-execution-day16"]!.body, /49cb854e|2d20c472/);
   });
 
-  it("keeps Day-17 after-the-fact fills, expires, and EOD on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-17 after-the-fact fills, expires, and EOD on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.ok(byId["seed-research-day17"]);
@@ -1170,8 +1270,8 @@ describe("no invented balances", () => {
     assert.doesNotMatch(byId["seed-execution-day17"]!.body, /49cb854e|2d20c472/);
   });
 
-  it("keeps Day-18 after-the-fact fills, expires, and EOD on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-18 after-the-fact fills, expires, and EOD on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.ok(byId["seed-research-day18"]);
@@ -1249,8 +1349,8 @@ describe("no invented balances", () => {
     assert.doesNotMatch(byId["seed-execution-day18"]!.body, /49cb854e|2d20c472/);
   });
 
-  it("keeps Day-19 after-the-fact fills, expires, and EOD on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-19 after-the-fact fills, expires, and EOD on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.ok(byId["seed-research-day19"]);
@@ -1341,8 +1441,8 @@ describe("no invented balances", () => {
     assert.doesNotMatch(byId["seed-execution-day19"]!.body, /49cb854e|2d20c472/);
   });
 
-  it("keeps Day-20 after-the-fact fills, expires, EOD, and the 28-day wrap on the public seed", () => {
-    const seed = parseStoredMessages(seedFile);
+  it("keeps Day-20 after-the-fact fills, expires, EOD, and the 28-day wrap on the Test 1 archive", () => {
+    const seed = parseStoredMessages(archiveSeedFile);
     const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
 
     assert.ok(byId["seed-research-day20"]);
@@ -1453,7 +1553,7 @@ describe("no invented balances", () => {
   });
 
   it("scrubs Day-4 next-session ticket details from the Wed private stubs", () => {
-    const seed = parseStoredMessages(seedFile);
+    const seed = parseStoredMessages(archiveSeedFile);
     const day4 = seed.filter((message) =>
       (DAY4_PLAN_IDS as readonly string[]).includes(message.id),
     );
@@ -1470,7 +1570,7 @@ describe("no invented balances", () => {
   });
 
   it("scrubs Day-5 next-session ticket details from the Thu private stubs", () => {
-    const seed = parseStoredMessages(seedFile);
+    const seed = parseStoredMessages(archiveSeedFile);
     const day5 = seed.filter((message) =>
       (DAY5_PLAN_IDS as readonly string[]).includes(message.id),
     );
@@ -1490,7 +1590,7 @@ describe("no invented balances", () => {
   });
 
   it("scrubs Day-6 next-session ticket details from the Fri private stubs", () => {
-    const seed = parseStoredMessages(seedFile);
+    const seed = parseStoredMessages(archiveSeedFile);
     const day6 = seed.filter((message) =>
       (DAY6_PLAN_IDS as readonly string[]).includes(message.id),
     );
@@ -1510,7 +1610,7 @@ describe("no invented balances", () => {
   });
 
   it("scrubs Day-7 next-session ticket details until after that session's 4:00 PM ET close", () => {
-    const seed = parseStoredMessages(seedFile);
+    const seed = parseStoredMessages(archiveSeedFile);
     const day7 = seed.filter((message) =>
       (DAY7_PLAN_IDS as readonly string[]).includes(message.id),
     );
@@ -1530,7 +1630,7 @@ describe("no invented balances", () => {
   });
 
   it("scrubs Day-12 next-session ticket details until after that session's 4:00 PM ET close", () => {
-    const seed = parseStoredMessages(seedFile);
+    const seed = parseStoredMessages(archiveSeedFile);
     const day12 = seed.filter((message) =>
       (DAY12_PLAN_IDS as readonly string[]).includes(message.id),
     );
@@ -1550,7 +1650,7 @@ describe("no invented balances", () => {
   });
 
   it("scrubs Day-13 next-session ticket details until after that session's 4:00 PM ET close", () => {
-    const seed = parseStoredMessages(seedFile);
+    const seed = parseStoredMessages(archiveSeedFile);
     const day13 = seed.filter((message) =>
       (DAY13_PLAN_IDS as readonly string[]).includes(message.id),
     );
@@ -1571,7 +1671,7 @@ describe("no invented balances", () => {
   });
 
   it("scrubs Day-14 next-session ticket details until after that session's 4:00 PM ET close", () => {
-    const seed = parseStoredMessages(seedFile);
+    const seed = parseStoredMessages(archiveSeedFile);
     const day14 = seed.filter((message) =>
       (DAY14_PLAN_IDS as readonly string[]).includes(message.id),
     );
@@ -1592,7 +1692,7 @@ describe("no invented balances", () => {
   });
 
   it("scrubs Day-15 next-session ticket details until after that session's 4:00 PM ET close", () => {
-    const seed = parseStoredMessages(seedFile);
+    const seed = parseStoredMessages(archiveSeedFile);
     const day15 = seed.filter((message) =>
       (DAY15_PLAN_IDS as readonly string[]).includes(message.id),
     );
@@ -1613,7 +1713,7 @@ describe("no invented balances", () => {
   });
 
   it("scrubs Day-16 next-session ticket details until after that session's 4:00 PM ET close", () => {
-    const seed = parseStoredMessages(seedFile);
+    const seed = parseStoredMessages(archiveSeedFile);
     const day16 = seed.filter((message) =>
       (DAY16_PLAN_IDS as readonly string[]).includes(message.id),
     );
@@ -1634,7 +1734,7 @@ describe("no invented balances", () => {
   });
 
   it("scrubs Day-17 next-session ticket details until after that session's 4:00 PM ET close", () => {
-    const seed = parseStoredMessages(seedFile);
+    const seed = parseStoredMessages(archiveSeedFile);
     const day17 = seed.filter((message) =>
       (DAY17_PLAN_IDS as readonly string[]).includes(message.id),
     );
@@ -1655,7 +1755,7 @@ describe("no invented balances", () => {
   });
 
   it("scrubs Day-18 next-session ticket details until after that session's 4:00 PM ET close", () => {
-    const seed = parseStoredMessages(seedFile);
+    const seed = parseStoredMessages(archiveSeedFile);
     const day18 = seed.filter((message) =>
       (DAY18_PLAN_IDS as readonly string[]).includes(message.id),
     );
@@ -1676,7 +1776,7 @@ describe("no invented balances", () => {
   });
 
   it("scrubs Day-19 next-session ticket details until after that session's 4:00 PM ET close", () => {
-    const seed = parseStoredMessages(seedFile);
+    const seed = parseStoredMessages(archiveSeedFile);
     const day19 = seed.filter((message) =>
       (DAY19_PLAN_IDS as readonly string[]).includes(message.id),
     );
@@ -1697,7 +1797,7 @@ describe("no invented balances", () => {
   });
 
   it("scrubs Day-20 next-session ticket details until after that session's 4:00 PM ET close", () => {
-    const seed = parseStoredMessages(seedFile);
+    const seed = parseStoredMessages(archiveSeedFile);
     const day20 = seed.filter((message) =>
       (DAY20_PLAN_IDS as readonly string[]).includes(message.id),
     );
@@ -1724,7 +1824,7 @@ describe("no invented balances", () => {
           id: "live-ops-1",
           botId: "dashboard-ops",
           body: "Ops note — still the public BotMarket desk. No new balances from me.",
-          createdAt: "2026-09-22T14:00:00.000Z",
+          createdAt: "2026-10-19T14:00:00.000Z",
         },
       ],
     });

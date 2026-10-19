@@ -21,6 +21,10 @@ const headerSource = readFileSync(
   new URL("../components/desk/desk-header.tsx", import.meta.url),
   "utf8",
 );
+const kpiSource = readFileSync(
+  new URL("../components/desk/kpi-strip.tsx", import.meta.url),
+  "utf8",
+);
 const setupSource = readFileSync(
   new URL("../components/desk/setup-desk.tsx", import.meta.url),
   "utf8",
@@ -85,6 +89,14 @@ describe("mandate clock", () => {
     assert.doesNotMatch(setupSource, /30-day/);
     assert.match(feedSource, /DESK_LENGTH_DAYS/);
     assert.doesNotMatch(feedSource, /30-day/);
+  });
+
+  it("formats dashboard clock dates with the shared ET formatter, not raw ISO", () => {
+    assert.match(headerSource, /formatEtDateRange/);
+    assert.doesNotMatch(headerSource, /slice\(0,\s*10\)/);
+    assert.doesNotMatch(headerSource, /clock ends/);
+    assert.match(kpiSource, /formatEtDate/);
+    assert.doesNotMatch(kpiSource, /slice\(0,\s*10\)/);
   });
 
   it("keeps the 1M equity-curve window independent of the mandate", () => {

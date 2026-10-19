@@ -7,8 +7,60 @@ import {
   equityCurveTicks,
   equityCurveWindow,
   formatEquityCurveDate,
+  formatEtDate,
+  formatEtDateRange,
   formatSignedUsd,
 } from "./format";
+
+function naiveEtDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "America/New_York",
+  });
+}
+
+describe("formatEtDate", () => {
+  it("keeps a date-only ISO string on that civil day in Eastern Time", () => {
+    assert.equal(naiveEtDate("2026-11-15"), "Sat, Nov 14, 2026");
+    assert.equal(formatEtDate("2026-11-15"), "Sun, Nov 15, 2026");
+    assert.equal(formatEtDate("2026-11-15", "short"), "Nov 15");
+    assert.equal(formatEtDate("2026-11-15", "weekday"), "Sun, Nov 15");
+  });
+
+  it("does not roll the Nov 1 2026 DST fall-back back to October", () => {
+    assert.equal(naiveEtDate("2026-11-01"), "Sat, Oct 31, 2026");
+    assert.equal(formatEtDate("2026-11-01"), "Sun, Nov 1, 2026");
+    assert.equal(formatEtDate("2026-11-01", "short"), "Nov 1");
+    assert.equal(formatEtDate("2026-11-01", "weekday"), "Sun, Nov 1");
+  });
+
+  it("labels a DST-shifted clock end from its written UTC date, not the ET instant", () => {
+    const clockEnd = "2026-11-15T04:00:00.000Z";
+    assert.equal(naiveEtDate(clockEnd), "Sat, Nov 14, 2026");
+    assert.equal(formatEtDate(clockEnd), "Sun, Nov 15, 2026");
+    assert.equal(
+      formatEtDateRange("2026-10-18T00:00:00-04:00", clockEnd),
+      "Oct 18 → Nov 15, 2026 ET",
+    );
+  });
+
+  it("includes both years when the range crosses New Year", () => {
+    assert.equal(
+      formatEtDateRange("2026-12-20", "2027-01-17"),
+      "Dec 20, 2026 → Jan 17, 2027 ET",
+    );
+  });
+
+  it("returns an em dash for missing or invalid values", () => {
+    assert.equal(formatEtDate(null), "—");
+    assert.equal(formatEtDate("not-a-date"), "—");
+    assert.equal(formatEtDate("2026-11-31"), "—");
+    assert.equal(formatEtDateRange("2026-11-15", null), "—");
+  });
+});
 
 describe("formatEquityCurveDate", () => {
   it("labels a UTC-midnight Alpaca 1D bar as that UTC calendar day in ET", () => {

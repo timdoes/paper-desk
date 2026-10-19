@@ -1,4 +1,4 @@
-import { formatPct, formatUsd, pnlClass } from "@/lib/format";
+import { formatEtDate, formatPct, formatUsd, pnlClass } from "@/lib/format";
 import type { AccountView, DeskClock } from "@/lib/types";
 
 function Kpi({
@@ -40,7 +40,7 @@ export function KpiStrip({
       ? "Invalid"
       : "Unset";
   const daysHint = clock.configured
-    ? `of ${clock.totalDays} · ${clock.endsAt.slice(0, 10)}`
+    ? `of ${clock.totalDays} · ends ${formatEtDate(clock.endsAt, "weekday")}`
     : "Set DESK_START_ISO";
 
   return (

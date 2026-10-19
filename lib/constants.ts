@@ -8,8 +8,10 @@ export const TEST_STAKE_USD = 10_000;
 export const DESK_LENGTH_DAYS = 28;
 /** Rolling ET equity-curve window ending today. Independent of the mandate clock. */
 export const EQUITY_CURVE_WINDOW_DAYS = 30;
-export const MAX_NAME_NAV_PCT = 0.1;
-export const DAILY_LOSS_BREAKER_PCT = 0.03;
+/** Test 2 max position: 15% of equity. */
+export const MAX_NAME_NAV_PCT = 0.15;
+/** Test 2 daily loss breaker: −2% vs prior close. */
+export const DAILY_LOSS_BREAKER_PCT = 0.02;
 
 export const DESK_OWNER = "TimDOES";
 export const DESK_NAME = "BotMarket";

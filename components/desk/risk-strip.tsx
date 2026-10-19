@@ -1,7 +1,14 @@
 import { ShieldAlert, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  DAILY_LOSS_BREAKER_PCT,
+  MAX_NAME_NAV_PCT,
+} from "@/lib/constants";
 import { formatPct } from "@/lib/format";
 import type { RiskStripState } from "@/lib/types";
+
+const NAME_CAP_PCT_LABEL = `${(MAX_NAME_NAV_PCT * 100).toFixed(0)}%`;
+const DAILY_LOSS_BREAKER_LABEL = `${(DAILY_LOSS_BREAKER_PCT * 100).toFixed(0)}%`;
 
 export function RiskStrip({ risk }: { risk: RiskStripState }) {
   const breakerOpen = risk.dailyLossTripped;
@@ -18,7 +25,7 @@ export function RiskStrip({ risk }: { risk: RiskStripState }) {
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <p className="font-mono text-[10px] tracking-[0.18em] text-white/40 uppercase">
-              Daily loss breaker · 3%
+              Daily loss breaker · {DAILY_LOSS_BREAKER_LABEL}
             </p>
             <Badge
               variant={breakerOpen ? "destructive" : "secondary"}
@@ -46,7 +53,7 @@ export function RiskStrip({ risk }: { risk: RiskStripState }) {
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <p className="font-mono text-[10px] tracking-[0.18em] text-white/40 uppercase">
-              Name cap · 10% NAV
+              Name cap · {NAME_CAP_PCT_LABEL} NAV
             </p>
             <Badge
               variant={nameHot ? "destructive" : "secondary"}
@@ -60,7 +67,7 @@ export function RiskStrip({ risk }: { risk: RiskStripState }) {
               ? risk.nameBreaches
                   .map((row) => `${row.symbol} ${formatPct(row.navPct, 1)}`)
                   .join(" · ")
-              : "New buys that would push a name over 10% of NAV are blocked."}
+              : `New buys that would push a name over ${NAME_CAP_PCT_LABEL} of NAV are blocked.`}
           </p>
         </div>
       </div>

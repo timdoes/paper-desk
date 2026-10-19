@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
+  DAILY_LOSS_BREAKER_PCT,
   DESK_LENGTH_DAYS,
   EQUITY_CURVE_WINDOW_DAYS,
+  MAX_NAME_NAV_PCT,
   PAPER_DISCLAIMER,
 } from "./constants";
 
@@ -31,6 +33,11 @@ const equitySource = readFileSync(
   new URL("../components/desk/equity-curve.tsx", import.meta.url),
   "utf8",
 );
+const riskStripSource = readFileSync(
+  new URL("../components/desk/risk-strip.tsx", import.meta.url),
+  "utf8",
+);
+const riskSource = readFileSync(new URL("./risk.ts", import.meta.url), "utf8");
 
 describe("paper disclaimer", () => {
   it("keeps the persistent paper-only / not-advice copy", () => {
@@ -79,6 +86,25 @@ describe("mandate clock", () => {
   it("keeps the rolling equity-curve window independent of the mandate", () => {
     assert.match(equitySource, /EQUITY_CURVE_WINDOW_DAYS/);
     assert.doesNotMatch(equitySource, /DESK_LENGTH_DAYS/);
+  });
+});
+
+describe("Test 2 risk limits", () => {
+  it("caps a name at 15% of equity and trips the daily breaker at −2%", () => {
+    assert.equal(MAX_NAME_NAV_PCT, 0.15);
+    assert.equal(DAILY_LOSS_BREAKER_PCT, 0.02);
+  });
+
+  it("renders the risk strip from the shared constants", () => {
+    assert.match(riskStripSource, /MAX_NAME_NAV_PCT/);
+    assert.match(riskStripSource, /DAILY_LOSS_BREAKER_PCT/);
+    assert.doesNotMatch(riskStripSource, /10% NAV/);
+    assert.doesNotMatch(riskStripSource, /Daily loss breaker · 3%/);
+  });
+
+  it("does not hard-code the old 10% / ~3% copy in order-risk reasons", () => {
+    assert.doesNotMatch(riskSource, /10% NAV name cap/);
+    assert.doesNotMatch(riskSource, /~3% daily loss breaker/);
   });
 });
 

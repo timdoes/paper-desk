@@ -460,11 +460,16 @@ describe("live feed cutoff", () => {
   });
 
   it("hides Test 1 blob history from GET/POST payloads and still persists Test 2 appends", async () => {
+    const liveSeedIds = parseStoredMessages(seedFile).map((message) => message.id);
     const adapter = memoryAdapter({ messages: [before] });
     const loaded = await loadDeskFeed(adapter, { startIso: test2Start });
     assert.deepEqual(
       loaded.messages.map((message) => message.id),
-      [],
+      liveSeedIds,
+    );
+    assert.equal(
+      loaded.messages.some((message) => message.id === before.id),
+      false,
     );
 
     const result = await appendDeskFeedMessage(
@@ -480,20 +485,24 @@ describe("live feed cutoff", () => {
     assert.equal(result.persisted, true);
     assert.deepEqual(
       result.payload.messages.map((message) => message.id),
-      [after.id],
+      [after.id, ...liveSeedIds],
+    );
+    assert.equal(
+      result.payload.messages.some((message) => message.id === before.id),
+      false,
     );
 
     const stored = await adapter.read();
     const storedMessages = parseStoredMessages(stored);
     assert.deepEqual(
       storedMessages.map((message) => message.id).sort(),
-      [after.id, before.id].sort(),
+      [after.id, before.id, ...liveSeedIds].sort(),
     );
 
     const reloaded = await loadDeskFeed(adapter, { startIso: test2Start });
     assert.deepEqual(
       reloaded.messages.map((message) => message.id),
-      [after.id],
+      [after.id, ...liveSeedIds],
     );
   });
 

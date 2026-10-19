@@ -74,6 +74,36 @@ export function sortDeskMessages(messages: DeskMessage[]): DeskMessage[] {
   });
 }
 
+/** Mandate start instant from `DESK_START_ISO`, or null when unset/invalid. */
+export function deskFeedCutoffMs(
+  startIso: string | null | undefined = process.env.DESK_START_ISO,
+): number | null {
+  const raw = startIso?.trim() ?? "";
+  if (!raw) {
+    return null;
+  }
+  const start = Date.parse(raw);
+  return Number.isNaN(start) ? null : start;
+}
+
+/**
+ * Live-feed messages are those at or after `DESK_START_ISO`.
+ * Earlier posts belong in a prior-test archive. Unset/invalid start keeps all.
+ */
+export function filterLiveDeskFeedMessages(
+  messages: DeskMessage[],
+  startIso: string | null | undefined = process.env.DESK_START_ISO,
+): DeskMessage[] {
+  const cutoff = deskFeedCutoffMs(startIso);
+  if (cutoff == null) {
+    return messages;
+  }
+  return messages.filter((message) => {
+    const created = Date.parse(message.createdAt);
+    return Number.isFinite(created) && created >= cutoff;
+  });
+}
+
 export function mergeDeskFeedMessages(
   seed: DeskMessage[],
   stored: DeskMessage[],

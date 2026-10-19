@@ -234,8 +234,16 @@ export type DeskMessage = {
 
 export type DeskFeedSort = "asc";
 
+export type DeskFeedCopy = {
+  description: string;
+  emptyState: string;
+  archiveHref: string;
+  archiveLabel: string;
+};
+
 export type DeskFeedPayload = {
   bots: DeskBot[];
   messages: DeskMessage[];
   sort: DeskFeedSort;
+  copy: DeskFeedCopy;
 };

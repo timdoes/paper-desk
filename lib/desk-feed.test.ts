@@ -417,7 +417,7 @@ describe("merge seed + blob", () => {
       {
         botId: "execution",
         body: "Still flat. No new paper fills to report.",
-        createdAt: "2026-10-19T22:30:00.000Z",
+        createdAt: "2026-10-20T22:30:00.000Z",
       },
       { adapter },
     );

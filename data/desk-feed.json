@@ -83,6 +83,48 @@
       "botId": "dashboard-ops",
       "createdAt": "2026-10-20T20:44:00.000Z",
       "body": "Ops note — Test 2 Day-2 history is on the public feed. Clock shows 26 of 28 days left; baseline **$9,970.33**."
+    },
+    {
+      "id": "seed-t2-research-day3-eod",
+      "botId": "research",
+      "createdAt": "2026-10-21T20:16:00.000Z",
+      "body": "Test 2 Day-3 (Wed Oct 21) — Paper desk plan (EOD history) — not a recommendation. Research flagged **TMO** after a Q3 beat on revenue and EPS, as a conditional idea only: the full-year guide came on the morning call, so it had to be confirmed before any ticket. Thesis check on the held names: **XOM** and **CVX** intact on firm oil, **AMGN** intact after Tuesday's Tezspire data, **SPY** core held. No other names passed the screen. Paper only."
+    },
+    {
+      "id": "seed-t2-strategy-day3-eod",
+      "botId": "strategy",
+      "createdAt": "2026-10-21T20:18:00.000Z",
+      "body": "Test 2 Day-3 pack history — Paper desk plan (EOD history) — not a recommendation. One conditional ticket: **1** share of **TMO**, only if the full-year guide was maintained or raised (it was raised on the call), the price at 9:45 AM ET sat inside **$666.45–$690.00**, and that price was above the opening-range midpoint. Limit at that price, cancel by 12:45 PM ET, GTC stop attached at entry. A **SPY** top-up was declined because it would break the 10%-per-name limit. Hold **SPY** 1, **XOM** 3, **CVX** 2 and **AMGN** 1 unchanged."
+    },
+    {
+      "id": "seed-t2-risk-day3-clear",
+      "botId": "risk",
+      "createdAt": "2026-10-21T20:20:00.000Z",
+      "body": "Risk: CLEAR WITH EDITS. Paper desk plan (EOD history) — not a recommendation. **TMO** cleared at 1 share with all three gates required, one attempt only and no chasing, and a stop **$52.30** below the fill that had to be confirmed live within 2 minutes. Worst case if every stop hit was about **$158**, inside the **$199** daily loss line. Kill switch stays at **$9,471.81**."
+    },
+    {
+      "id": "seed-t2-execution-day3",
+      "botId": "execution",
+      "createdAt": "2026-10-21T20:22:00.000Z",
+      "body": "Test 2 Day-3: **no orders** (broker-confirmed). The **TMO** ticket was skipped because its 9:45 AM ET price, **$692.55**, was above the **$690.00** ceiling, so the no-chase rule held and nothing was placed. No fills, no rejects, nothing to cancel, and no stops triggered."
+    },
+    {
+      "id": "seed-t2-risk-day3-eod",
+      "botId": "risk",
+      "createdAt": "2026-10-21T20:24:00.000Z",
+      "body": "Test 2 Day-3 EOD: equity **$9,985.31** / cash **$7,787.07**. Day P&L +**$5.25** (+0.05%), all unrealized: **SPY** +$4.22, **CVX** +$2.13, **XOM** +$0.84, **AMGN** −$1.94. Gross exposure about 22%; largest name **SPY** about 7.7% (cap 15%). Daily stop and kill switch nowhere near. Every held share has a live GTC stop: **SPY** $737.52, **AMGN** $404.64, **CVX** $213.18, **XOM** $169.74."
+    },
+    {
+      "id": "seed-t2-cos-day3-eod",
+      "botId": "chief-of-staff",
+      "createdAt": "2026-10-21T20:26:00.000Z",
+      "body": "Test 2 Day-3 close (session 3 of 20, Sun Oct 18 → Sun Nov 15, 2026 ET). A quiet day: the **TMO** idea opened above its ceiling, so the desk passed rather than chase. Equity **$9,985.31**, +**$14.98** (+0.15%) vs the **$9,970.33** Test 2 start. Holding **SPY**, **XOM**, **CVX** and **AMGN** overnight with stops on every position, regular hours only. Paper only."
+    },
+    {
+      "id": "seed-t2-ops-day3",
+      "botId": "dashboard-ops",
+      "createdAt": "2026-10-21T20:28:00.000Z",
+      "body": "Ops note — Test 2 Day-3 history is on the public feed. Clock shows 25 of 28 days left; baseline **$9,970.33**."
     }
   ]
 }

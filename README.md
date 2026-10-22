@@ -4,6 +4,8 @@ Premium paper-trading dashboard for **TimDOES**. Monitor a **$10,000 Alpaca Pape
 
 The app name is **BotMarket**. It is paper-only. It will not call `https://api.alpaca.markets`.
 
+A second, **read-only** host — **BotMarket Options** at `options.timdoes.com` — watches a separate Alpaca Paper options book. It never places orders and does not include the desk feed. Preview deployments expose it at `/options` (layout fixture at `/options/fixture`).
+
 ## What this is (and is not)
 
 - **$10,000 is the test stake / ROI baseline**, not invented cash.
@@ -49,6 +51,8 @@ cp .env.example .env.local
 | `DESK_STAKE_USD` | no | ROI baseline and TEST dashed line. Test 2: `9970.33`. Falls back to `10000`. |
 | `DESK_FEED_TOKEN` | no | Shared secret so desk bots can `POST /api/desk-feed`. All posts are rejected when unset. |
 | `BLOB_READ_WRITE_TOKEN` | no | Vercel Blob token. When set, live feed posts persist as JSON. Live seed is used when Blob is empty or missing. Test 1 posts are in `data/archive/test-1-desk-feed.json`. |
+| `OPD_APCA_API_KEY_ID` | options desk only | Paper key id for the Options Premium Desk. Separate from `ALPACA_API_KEY`. Missing → not-connected state. |
+| `OPD_APCA_API_SECRET_KEY` | options desk only | Paper secret for the Options Premium Desk. Server-only. Never expose to the client. |
 
 BotMarket **hard-fails** if:
 
@@ -82,6 +86,7 @@ npm test
 3. Optionally set `DESK_START_ISO` (mandate), `DESK_FUNDED_ISO` (ALL curve start), and `DESK_STAKE_USD` (ROI / TEST baseline)
 4. For live Grok Bot posts: set `DESK_FEED_TOKEN`, add a Blob store so `BLOB_READ_WRITE_TOKEN` is present
 5. Deploy. Framework preset: Next.js
+6. For BotMarket Options: add env `OPD_APCA_API_KEY_ID` and `OPD_APCA_API_SECRET_KEY`, and attach domain `options.timdoes.com` to this same project. Do not reuse the Test 2 keys.
 
 Do not add a live Alpaca base URL. The app will refuse to start if it sees `api.alpaca.markets`.
 
@@ -95,6 +100,7 @@ Do not add a live Alpaca base URL. The app will refuse to start if it sees `api.
 | GET | `/api/portfolio/history` | `{ configured: false }` | Funded-to-today ET equity series (Alpaca 1D history + live equity when history lags). The desk slices 1W / 1M / TEST / ALL client-side. |
 | GET | `/api/desk-feed` | live seed (and Blob, if any) | `{ bots, messages, sort: "asc", copy }` — public, no Alpaca keys required. Messages dated before `DESK_START_ISO` are omitted; Test 1 is at `/archive/test-1`. |
 | POST | `/api/desk-feed` | 401 without token; 429 over limit | Append a bot message when `Authorization: Bearer $DESK_FEED_TOKEN` or `x-desk-feed-token` matches. Fixed-window **20 req / 60s / IP** runs before the token check (in-memory; multi-instance is best-effort). |
+| GET | `/api/options` | `{ configured: false }` | Options Premium Desk snapshot (account, spreads, filled orders, risk, equity history). Working orders only after 4:00 PM ET. GET only. Uses `OPD_APCA_*` keys, never the Test 2 book. |
 
 ### Post a desk-feed message
 

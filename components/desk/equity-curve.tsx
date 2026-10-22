@@ -45,11 +45,13 @@ export function EquityCurve({
   stake,
   clock,
   dataSource = "alpaca",
+  caption,
 }: {
   points: HistoryPoint[];
   stake: number;
   clock: DeskClock;
   dataSource?: DeskDataSource;
+  caption?: string;
 }) {
   const [range, setRange] = useState<EquityCurveRange>(DEFAULT_EQUITY_CURVE_RANGE);
   const [scrub, setScrub] = useState<HistoryPoint | null>(null);
@@ -100,7 +102,7 @@ export function EquityCurve({
     <GlassPanel className="h-full">
       <GlassHeader
         title="Equity curve"
-        description={equityCurveCaption(range, { fixture })}
+        description={caption ?? equityCurveCaption(range, { fixture })}
       />
       <GlassBody className="flex flex-col gap-3">
         {fixture ? (

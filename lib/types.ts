@@ -26,6 +26,7 @@ export type AlpacaAccount = {
   cash?: string;
   portfolio_value?: string;
   buying_power?: string;
+  options_buying_power?: string;
   equity?: string;
   last_equity?: string;
   long_market_value?: string;

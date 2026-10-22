@@ -31,6 +31,10 @@ const historyRoute = readFileSync(
   new URL("../app/api/portfolio/history/route.ts", import.meta.url),
   "utf8",
 );
+const optionsRoute = readFileSync(
+  new URL("../app/api/options/route.ts", import.meta.url),
+  "utf8",
+);
 const pageSource = readFileSync(
   new URL("../app/page.tsx", import.meta.url),
   "utf8",
@@ -122,6 +126,7 @@ describe("Alpaca GET cache headers", () => {
       positionsRoute,
       ordersRoute,
       historyRoute,
+      optionsRoute,
     ]) {
       assert.match(source, /jsonPrivate/);
       assert.doesNotMatch(source, /NextResponse\.json/);

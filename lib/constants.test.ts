@@ -6,6 +6,7 @@ import {
   DESK_LENGTH_DAYS,
   EQUITY_CURVE_WINDOW_DAYS,
   MAX_NAME_NAV_PCT,
+  OPD_PAPER_DISCLAIMER,
   PAPER_DISCLAIMER,
 } from "./constants";
 
@@ -70,11 +71,13 @@ describe("paper disclaimer", () => {
     assert.match(PAPER_DISCLAIMER, /Do not copy these tickets/);
     assert.match(PAPER_DISCLAIMER, /Past paper results do not predict live results/);
     assert.match(PAPER_DISCLAIMER, /not an RIA or broker-dealer/);
+    assert.equal(OPD_PAPER_DISCLAIMER, "Paper trading only. Not investment advice.");
   });
 
   it("renders the full Legal copy from the root layout in document flow", () => {
     assert.match(layoutSource, /DisclaimerBanner/);
-    assert.match(bannerSource, /\{PAPER_DISCLAIMER\}/);
+    assert.match(bannerSource, /PAPER_DISCLAIMER/);
+    assert.match(bannerSource, /OPD_PAPER_DISCLAIMER/);
     assert.doesNotMatch(bannerSource, /position:\s*(sticky|fixed)/);
     assert.doesNotMatch(layoutSource, /position:\s*(sticky|fixed)/);
 

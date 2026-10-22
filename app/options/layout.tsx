@@ -23,6 +23,14 @@ export const metadata: Metadata = {
       noimageindex: true,
     },
   },
+  openGraph: {
+    title: OPD_DESK_NAME,
+    description,
+  },
+  twitter: {
+    title: OPD_DESK_NAME,
+    description,
+  },
 };
 
 export default function OptionsLayout({

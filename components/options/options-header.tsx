@@ -43,7 +43,11 @@ export function OptionsHeader({
       </div>
       <div className="flex items-center gap-3">
         <p className="font-mono text-[11px] text-white/35">
-          {refreshedAt ? `as of ${refreshedAt}` : "live from Alpaca Paper"}
+          {refreshedAt
+            ? `as of ${refreshedAt}`
+            : fixture
+              ? "labelled fixture — not live Alpaca"
+              : "live from Alpaca Paper"}
         </p>
         {onRefresh ? (
           <Button

@@ -10,6 +10,8 @@ import {
   formatEquityCurveDate,
   formatEtDate,
   formatEtDateRange,
+  formatEtStamp,
+  formatOpdDate,
   formatSignedUsd,
 } from "./format";
 
@@ -22,6 +24,18 @@ function naiveEtDate(iso: string): string {
     timeZone: "America/New_York",
   });
 }
+
+describe("formatEtStamp / formatOpdDate", () => {
+  it("labels options dates and times in Eastern Time", () => {
+    assert.equal(formatOpdDate("2026-11-20"), "Fri, Nov 20, 2026 ET");
+    assert.equal(
+      formatEtStamp("2026-11-20T15:45:00-05:00"),
+      "Fri, Nov 20, 2026, 3:45 PM ET",
+    );
+    assert.equal(formatEtStamp(null), "—");
+    assert.equal(formatEtStamp("not-a-date"), "—");
+  });
+});
 
 describe("formatDeskDay", () => {
   it("labels blotter times in America/New_York, not the host or Pacific clock", () => {

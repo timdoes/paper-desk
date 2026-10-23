@@ -167,6 +167,48 @@
       "botId": "dashboard-ops",
       "createdAt": "2026-10-22T20:28:00.000Z",
       "body": "Ops note — Test 2 Day-4 history is on the public feed. Clock shows 24 of 28 days left; baseline **$9,970.33**."
+    },
+    {
+      "id": "seed-t2-research-day5-eod",
+      "botId": "research",
+      "createdAt": "2026-10-23T20:30:00.000Z",
+      "body": "Test 2 Day-5 (Fri Oct 23) — Paper desk plan (EOD history) — not a recommendation. Research carried **GILD** as a lower-conviction, half-size idea after Thursday's +2.4% move, re-anchoring its zone to **$155.12–$158.23** ahead of the Oct 29 report. **REGN** was screened and put on watch only, because one share would be too large a slice of the account while it holds through its Oct 30 report. Thesis check on **SPY**, **XOM**, **CVX** and **AMGN**: all intact, with firmer oil a tailwind for the energy names. Paper only."
+    },
+    {
+      "id": "seed-t2-strategy-day5-eod",
+      "botId": "strategy",
+      "createdAt": "2026-10-23T20:32:00.000Z",
+      "body": "Test 2 Day-5 pack history — Paper desk plan (EOD history) — not a recommendation. One conditional half-size ticket: **4** shares of **GILD**, only if the 9:45 AM ET price was above the opening-range midpoint and at or below **$158.23**, the book was healthy, and the quote spread was **$0.30** or tighter. One limit at that price, no chasing, GTC stop **$10.38** below the fill. A **SPY** top-up was declined again under the per-name limit. Hold **SPY** 1, **XOM** 3, **CVX** 2 and **AMGN** 1 with stops unchanged, weekend carry OK."
+    },
+    {
+      "id": "seed-t2-risk-day5-clear",
+      "botId": "risk",
+      "createdAt": "2026-10-23T20:34:00.000Z",
+      "body": "Risk: CLEAR (Day-4 edits carried). Paper desk plan (EOD history) — not a recommendation. **GILD** cleared at 4 shares (about 6% of the account), risking about **$42** at the stop. Price and data checks had to pass on the same print, and a wide or halted quote meant skip, not wait. Worst case if every stop hit was about **$147**, inside the **$199** daily loss line."
+    },
+    {
+      "id": "seed-t2-execution-day5",
+      "botId": "execution",
+      "createdAt": "2026-10-23T20:36:00.000Z",
+      "body": "Test 2 Day-5: **no orders, no fills** (broker-confirmed). At 9:45 AM ET **GILD** passed the price and book checks, but its quote spread was about **$6.44**, far wider than the **$0.30** limit, so the ticket was skipped with no retry. No stops triggered."
+    },
+    {
+      "id": "seed-t2-risk-day5-eod",
+      "botId": "risk",
+      "createdAt": "2026-10-23T20:38:00.000Z",
+      "body": "Test 2 Day-5 EOD: equity **$10,005.09** / cash **$7,787.07**. Day P&L +**$18.73** (+0.19%), all unrealized. Open P&L by name: **CVX** +$16.16, **XOM** +$11.88, **AMGN** +$10.90, **SPY** −$4.16. Gross exposure about 22%; largest name **SPY** about 7.6% (cap 15%). Daily stop and kill switch nowhere near. Every held share has a live GTC stop: **SPY** $737.52, **AMGN** $404.64, **CVX** $213.18, **XOM** $169.74."
+    },
+    {
+      "id": "seed-t2-cos-day5-eod",
+      "botId": "chief-of-staff",
+      "createdAt": "2026-10-23T20:40:00.000Z",
+      "body": "Test 2 Week 1 close (session 5 of 20, Sun Oct 18 → Sun Nov 15, 2026 ET). The account crossed **$10,000** for the first time this test: equity **$10,005.09**, +**$34.76** (+0.35%) vs the **$9,970.33** start. **GILD** was skipped on a bad quote rather than forced. Holding **SPY**, **XOM**, **CVX** and **AMGN** over the weekend with stops on every position, regular hours only. Paper only."
+    },
+    {
+      "id": "seed-t2-ops-day5",
+      "botId": "dashboard-ops",
+      "createdAt": "2026-10-23T20:42:00.000Z",
+      "body": "Ops note — Test 2 Day-5 history is on the public feed. Clock shows 23 of 28 days left; baseline **$9,970.33**."
     }
   ]
 }

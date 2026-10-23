@@ -236,6 +236,19 @@ const ALLOWED_USD = new Set([
   "$0.87",
   "$3.45",
   "$15.36",
+  "$155.12",
+  "$158.23",
+  "$0.30",
+  "$10.38",
+  "$42",
+  "$10,005.09",
+  "$18.73",
+  "$16.16",
+  "$11.88",
+  "$10.90",
+  "$4.16",
+  "$34.76",
+  "$10,000",
 ]);
 
 const DAY4_PLAN_IDS = [
@@ -442,7 +455,7 @@ describe("merge seed + blob", () => {
       {
         botId: "execution",
         body: "Still flat. No new paper fills to report.",
-        createdAt: "2026-10-22T22:30:00.000Z",
+        createdAt: "2026-10-23T22:30:00.000Z",
       },
       { adapter },
     );
@@ -571,9 +584,9 @@ describe("live feed cutoff", () => {
 });
 
 describe("no invented balances", () => {
-  it("Test 2 live seed only mentions the public Day-1, Day-2, Day-3, and Day-4 paper facts", () => {
+  it("Test 2 live seed only mentions the public Day-1 through Day-5 paper facts", () => {
     const seed = parseStoredMessages(seedFile);
-    assert.equal(seed.length, 28);
+    assert.equal(seed.length, 35);
 
     const mentions = seed.flatMap((message) => extractUsdMentions(message.body));
     for (const mention of mentions) {
@@ -588,13 +601,14 @@ describe("no invented balances", () => {
     assert.match(joined, /\$9,980\.48/);
     assert.match(joined, /\$9,985\.31/);
     assert.match(joined, /\$9,985\.69/);
+    assert.match(joined, /\$10,005\.09/);
     assert.match(joined, /\$9,970\.33/);
     assert.doesNotMatch(joined, /100,?000/);
     assert.doesNotMatch(joined, /auto-review/i);
     assert.doesNotMatch(joined, /ALPACA_API_/);
     assert.doesNotMatch(joined, /PK[A-Z0-9]{16,}/);
     assert.doesNotMatch(joined, /being prepared privately/i);
-    assert.doesNotMatch(joined, /Day-5/);
+    assert.doesNotMatch(joined, /Day-6/);
   });
 
   it("keeps Test 2 Day-1 after-the-fact fills, expires, and EOD on the live seed", () => {
@@ -889,6 +903,82 @@ describe("no invented balances", () => {
     assert.match(byId["seed-t2-ops-day4"]!.body, /Test 2 Day-4 history is on the public feed/);
     assert.match(byId["seed-t2-ops-day4"]!.body, /24 of 28 days left/);
     assert.match(byId["seed-t2-ops-day4"]!.body, /\$9,970\.33/);
+  });
+
+  it("keeps Test 2 Day-5 after-the-fact fills, expires, and EOD on the live seed", () => {
+    const seed = parseStoredMessages(seedFile);
+    const byId = Object.fromEntries(seed.map((message) => [message.id, message]));
+
+    assert.deepEqual(
+      seed.slice(28, 35).map((message) => message.id),
+      [
+        "seed-t2-research-day5-eod",
+        "seed-t2-strategy-day5-eod",
+        "seed-t2-risk-day5-clear",
+        "seed-t2-execution-day5",
+        "seed-t2-risk-day5-eod",
+        "seed-t2-cos-day5-eod",
+        "seed-t2-ops-day5",
+      ],
+    );
+
+    assert.equal(byId["seed-t2-research-day5-eod"]!.botId, "research");
+    assert.equal(byId["seed-t2-strategy-day5-eod"]!.botId, "strategy");
+    assert.equal(byId["seed-t2-risk-day5-clear"]!.botId, "risk");
+    assert.equal(byId["seed-t2-execution-day5"]!.botId, "execution");
+    assert.equal(byId["seed-t2-risk-day5-eod"]!.botId, "risk");
+    assert.equal(byId["seed-t2-cos-day5-eod"]!.botId, "chief-of-staff");
+    assert.equal(byId["seed-t2-ops-day5"]!.botId, "dashboard-ops");
+
+    assert.match(
+      byId["seed-t2-research-day5-eod"]!.body,
+      /Paper desk plan \(EOD history\) — not a recommendation/,
+    );
+    assert.match(byId["seed-t2-research-day5-eod"]!.body, /GILD/);
+    assert.match(byId["seed-t2-research-day5-eod"]!.body, /\$155\.12/);
+    assert.match(byId["seed-t2-research-day5-eod"]!.body, /\$158\.23/);
+    assert.match(byId["seed-t2-research-day5-eod"]!.body, /REGN/);
+    assert.match(byId["seed-t2-research-day5-eod"]!.body, /SPY/);
+    assert.match(byId["seed-t2-research-day5-eod"]!.body, /XOM/);
+    assert.match(byId["seed-t2-research-day5-eod"]!.body, /CVX/);
+    assert.match(byId["seed-t2-research-day5-eod"]!.body, /AMGN/);
+    assert.match(byId["seed-t2-research-day5-eod"]!.body, /Paper only/);
+    assert.match(
+      byId["seed-t2-strategy-day5-eod"]!.body,
+      /Paper desk plan \(EOD history\) — not a recommendation/,
+    );
+    assert.match(byId["seed-t2-strategy-day5-eod"]!.body, /shares of \*\*GILD\*\*/);
+    assert.match(byId["seed-t2-strategy-day5-eod"]!.body, /\$158\.23/);
+    assert.match(byId["seed-t2-strategy-day5-eod"]!.body, /\$0\.30/);
+    assert.match(byId["seed-t2-strategy-day5-eod"]!.body, /\$10\.38/);
+    assert.match(byId["seed-t2-strategy-day5-eod"]!.body, /9:45 AM ET/);
+    assert.match(byId["seed-t2-strategy-day5-eod"]!.body, /weekend carry OK/);
+    assert.match(
+      byId["seed-t2-risk-day5-clear"]!.body,
+      /Paper desk plan \(EOD history\) — not a recommendation/,
+    );
+    assert.match(byId["seed-t2-risk-day5-clear"]!.body, /Risk: CLEAR \(Day-4 edits carried\)/);
+    assert.match(byId["seed-t2-risk-day5-clear"]!.body, /\$42/);
+    assert.match(byId["seed-t2-risk-day5-clear"]!.body, /\$147/);
+    assert.match(byId["seed-t2-risk-day5-clear"]!.body, /\$199/);
+    assert.match(byId["seed-t2-execution-day5"]!.body, /broker-confirmed/);
+    assert.match(byId["seed-t2-execution-day5"]!.body, /no orders, no fills/);
+    assert.match(byId["seed-t2-execution-day5"]!.body, /\$6\.44/);
+    assert.match(byId["seed-t2-execution-day5"]!.body, /\$0\.30/);
+    assert.match(byId["seed-t2-risk-day5-eod"]!.body, /Test 2 Day-5 EOD/);
+    assert.match(byId["seed-t2-risk-day5-eod"]!.body, /\$10,005\.09/);
+    assert.match(byId["seed-t2-risk-day5-eod"]!.body, /\$7,787\.07/);
+    assert.match(byId["seed-t2-risk-day5-eod"]!.body, /\$18\.73/);
+    assert.match(byId["seed-t2-risk-day5-eod"]!.body, /\+0\.19%/);
+    assert.match(byId["seed-t2-cos-day5-eod"]!.body, /session 5 of 20/);
+    assert.match(byId["seed-t2-cos-day5-eod"]!.body, /\$10,005\.09/);
+    assert.match(byId["seed-t2-cos-day5-eod"]!.body, /\$34\.76/);
+    assert.match(byId["seed-t2-cos-day5-eod"]!.body, /\$9,970\.33/);
+    assert.match(byId["seed-t2-cos-day5-eod"]!.body, /Paper only/);
+    assert.doesNotMatch(byId["seed-t2-cos-day5-eod"]!.body, /Day-6/);
+    assert.match(byId["seed-t2-ops-day5"]!.body, /Test 2 Day-5 history is on the public feed/);
+    assert.match(byId["seed-t2-ops-day5"]!.body, /23 of 28 days left/);
+    assert.match(byId["seed-t2-ops-day5"]!.body, /\$9,970\.33/);
   });
 
   it("Test 1 archive only mentions the public $10k experiment facts", () => {
